@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Card Tracking Game</title>
+<style>
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    color: #333;
+}
+
+.game-container {
+    text-align: center;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+#scoreBoard {
+    margin-bottom: 20px;
+    font-size: 1.2em;
+}
+
+.cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.card {
+    width: 100px;
+    height: 150px;
+    background-color: #007BFF;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    position: relative;
+}
+
+.card .front, .card .back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+    color: white;
+}
+
+.card .back {
+    transform: rotateY(180deg);
+}
+
+.card.flipped {
+    transform: rotateY(180deg);
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+@keyframes shuffle {
+    0%, 100% {transform: translateX(0);}
+    50% {transform: translateX(50px);}
+}
+
+.shuffle {
+    animation: shuffle 0.5s infinite;
+}
+
+@keyframes reveal {
+    0% {opacity: 0;}
+    100% {opacity: 1;}
+}
+</style>
+</head>
+<body>
+<div class="game-container">
+    <div id="scoreBoard">Round: <span id="round">1</span> | Wins: <span id="wins">0</span> | Losses: <span id="losses">0</span></div>
+    <div class="cards-container">
+        <div class="card" data-value="empty"><div class="front">$</div><div class="back"></div></div>
+        <div class="card" data-value="empty"><div class="front">□</div><div class="back"></div></div>
+        <div class="card" data-value="empty"><div class="front">□</div><div class="back"></div></div>
+    </div>
+    <button id="startRound">Start Round</button>
+    <button id="resetGame">Reset Game</button>
+    <audio id="winSound" src="path/to/congratulatory.mp3"></audio>
+    <audio id="loseSound" src="path/to/glassbreak.mp3"></audio>
+    <audio id="countdownSound" src="path/to/countdown.mp3"></audio>
+    <audio id="shuffleSound" src="path/to/shuffle.mp3"></audio>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', (event) => {
+    let wins = 0, losses = 0, round = 1;
+    const cards = document.querySelectorAll('.card');
+    const startRoundBtn = document.getElementById('startRound');
+    const resetGameBtn = document.getElementById('resetGame');
+    const winSound = document.getElementById('winSound');
+    const loseSound = document.getElementById('loseSound');
+    const countdownSound = document.getElementById('countdownSound');
+    const shuffleSound = document.getElementById('shuffleSound');
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function startGame() {
+        countdownSound.play();
+        setTimeout(() => {
+            countdownSound.pause();
+            cards.forEach(card => {
+                card.classList.add('flipped');
+                card.style.animation = 'shuffle 0.5s infinite';
+            });
+            shuffleSound.play();
+            setTimeout(() => {
+                shuffleSound.pause();
+                cards.forEach(card => {
+                    card.style.animation = '';
+                    card.classList.remove('flipped');
+                });
+                cards.forEach(card => card.addEventListener('click', selectCard));
+            }, 5000);
+        }, 5000);
+    }
+
+    function selectCard(e) {
+        cards.forEach(card => card.removeEventListener('click', selectCard));
+        const selectedCard = e.currentTarget;
+        selectedCard.classList.add('flipped');
+        if (selectedCard.dataset.value === 'dollar') {
+            winSound.play();
+            wins++;
+        } else {
+            loseSound.play();
+            losses++;
+        }
+        updateScore();
+        setTimeout(() => startRoundBtn.disabled = false, 2000);
+    }
+
+    function updateScore() {
+        document.getElementById('wins').textContent = wins;
+        document.getElementById('losses').textContent = losses;
+        document.getElementById('round').textContent = ++round;
+    }
+
+    function resetGame() {
+        wins = losses = round = 0;
+        updateScore();
+        cards.forEach(card => {
+            card.classList.remove('flipped');
+            card.dataset.value = 'empty';
+        });
+        document.querySelector('.card').dataset.value = 'dollar';
+    }
+
+    startRoundBtn.addEventListener('click', () => {
+        startRoundBtn.disabled = true;
+        startGame();
+    });
+
+    resetGameBtn.addEventListener('click', resetGame);
+
+    resetGame();
+});
+</script>
+</body>
+</html>
