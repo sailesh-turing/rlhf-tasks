@@ -1,234 +1,269 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Card Tracking Game</title>
     <style>
-      body {
-        font-family: 'Arial', sans-serif;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        margin: 0;
-        background-color: #f0f0f0;
-        background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      }
-      #scoreboard {
-        font-size: 1.4em;
-        margin-bottom: 30px;
-        text-align: center;
-        background-color: rgba(255, 255, 255, 0.8);
-        padding: 15px 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-      #game-area {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 30px;
-        margin-bottom: 30px;
-        height: 220px;
-        width: 500px;
-        position: relative;
-      }
-      .card {
-        width: 120px;
-        height: 180px;
-        background-color: #fff;
-        border: none;
-        border-radius: 15px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 2.5em;
-        cursor: pointer;
-        transition: transform 0.6s, left 0.5s ease-in-out, box-shadow 0.3s;
-        transform-style: preserve-3d;
-        position: absolute;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-      }
-      .card:hover {
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-      }
-      .card .front,
-      .card .back {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        backface-visibility: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border-radius: 15px;
-        font-weight: bold;
-      }
-      .card .front {
-        background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        color: #333;
-      }
-      .card .back {
-        background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        transform: rotateY(180deg);
-      }
-      .card.flipped {
-        transform: rotateY(180deg);
-      }
-      #controls {
-        display: flex;
-        gap: 20px;
-      }
-      button {
-        padding: 12px 25px;
-        font-size: 1.1em;
-        cursor: pointer;
-        background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        transition: all 0.3s;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-      button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-      }
-      button:disabled {
-        background-image: linear-gradient(135deg, #9bafd9 0%, #103783 100%);
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-      }
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        #scoreboard {
+            font-size: 1.4em;
+            margin-bottom: 30px;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 15px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        #game-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            height: 220px;
+            width: 500px;
+            position: relative;
+        }
+        .card {
+            width: 120px;
+            height: 180px;
+            background-color: #fff;
+            border: none;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5em;
+            cursor: pointer;
+            transition: transform 0.6s, left 0.5s ease-in-out, box-shadow 0.3s;
+            transform-style: preserve-3d;
+            position: absolute;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .card:hover {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        .card .front, .card .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+        .card .front {
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+        }
+        .card .back {
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        #controls {
+            display: flex;
+            gap: 20px;
+        }
+        button {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        button:disabled {
+            background-image: linear-gradient(135deg, #9bafd9 0%, #103783 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        #countdown {
+            font-size: 2em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div id="scoreboard">
-      Round: <span id="round">1</span> | Won: <span id="won">0</span> | Lost:
-      <span id="lost">0</span>
+        Round: <span id="round">1</span> | Won: <span id="won">0</span> | Lost: <span id="lost">0</span>
     </div>
+    <div id="countdown"></div>
     <div id="game-area">
-      <div class="card" data-index="0" style="left: 0px">
-        <div class="front">🟥</div>
-        <div class="back">?</div>
-      </div>
-      <div class="card" data-index="1" style="left: 190px">
-        <div class="front">🟥</div>
-        <div class="back">?</div>
-      </div>
-      <div class="card" data-index="2" style="left: 380px">
-        <div class="front">💰</div>
-        <div class="back">?</div>
-      </div>
+        <div class="card" data-index="0" style="left: 0px;">
+            <div class="front">🟥</div>
+            <div class="back">?</div>
+        </div>
+        <div class="card" data-index="1" style="left: 190px;">
+            <div class="front">🟥</div>
+            <div class="back">?</div>
+        </div>
+        <div class="card" data-index="2" style="left: 380px;">
+            <div class="front">💰</div>
+            <div class="back">?</div>
+        </div>
     </div>
     <div id="controls">
-      <button id="start-button">Start Round</button>
-      <button id="reset-button">Reset Game</button>
+        <button id="start-button">Start Round</button>
+        <button id="reset-button">Reset Game</button>
     </div>
 
+    <audio id="countdown-sound" src="https://assets.mixkit.co/active_storage/sfx/1046/1046.wav"></audio>
+    <audio id="shuffle-sound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019.wav"></audio>
+    <audio id="win-sound" src="https://assets.mixkit.co/active_storage/sfx/2018/2018.wav"></audio>
+    <audio id="lose-sound" src="https://assets.mixkit.co/active_storage/sfx/2020/2020.wav"></audio>
+
     <script>
-      const cards = document.querySelectorAll('.card');
-      const startButton = document.getElementById('start-button');
-      const resetButton = document.getElementById('reset-button');
-      const roundSpan = document.getElementById('round');
-      const wonSpan = document.getElementById('won');
-      const lostSpan = document.getElementById('lost');
+        const cards = document.querySelectorAll('.card');
+        const startButton = document.getElementById('start-button');
+        const resetButton = document.getElementById('reset-button');
+        const roundSpan = document.getElementById('round');
+        const wonSpan = document.getElementById('won');
+        const lostSpan = document.getElementById('lost');
+        const countdownDisplay = document.getElementById('countdown');
 
-      let round = 1;
-      let won = 0;
-      let lost = 0;
-      let winningCardIndex = 2;
-      let canClick = false;
+        const countdownSound = document.getElementById('countdown-sound');
+        const shuffleSound = document.getElementById('shuffle-sound');
+        const winSound = document.getElementById('win-sound');
+        const loseSound = document.getElementById('lose-sound');
 
-      function updateScoreboard() {
-        roundSpan.textContent = round;
-        wonSpan.textContent = won;
-        lostSpan.textContent = lost;
-      }
+        let round = 1;
+        let won = 0;
+        let lost = 0;
+        let winningCardIndex = 2;
+        let canClick = false;
 
-      function flipCards() {
-        cards.forEach((card) => card.classList.add('flipped'));
-      }
-
-      function unflipCards() {
-        cards.forEach((card) => card.classList.remove('flipped'));
-      }
-
-      function shuffleCards() {
-        const positions = [0, 190, 380];
-        let animations = 10;
-        let shuffleInterval = setInterval(() => {
-          for (let i = positions.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [positions[i], positions[j]] = [positions[j], positions[i]];
-          }
-          cards.forEach((card, index) => {
-            card.style.left = positions[index] + 'px';
-            if (card.querySelector('.front').textContent === '💰') {
-              winningCardIndex = index;
-            }
-          });
-          animations--;
-          if (animations === 0) {
-            clearInterval(shuffleInterval);
-            canClick = true;
-          }
-        }, 500);
-      }
-
-      function revealCard(index) {
-        cards[index].classList.remove('flipped');
-        if (index === winningCardIndex) {
-          won++;
-        } else {
-          lost++;
+        function updateScoreboard() {
+            roundSpan.textContent = round;
+            wonSpan.textContent = won;
+            lostSpan.textContent = lost;
         }
-        round++;
-        updateScoreboard();
-        startButton.disabled = false;
-        canClick = false;
-      }
 
-      function startRound() {
-        unflipCards();
-        startButton.disabled = true;
-        setTimeout(() => {
-          flipCards();
-          setTimeout(() => {
-            shuffleCards();
-          }, 600);
-        }, 5000);
-      }
+        function flipCards() {
+            cards.forEach(card => card.classList.add('flipped'));
+        }
 
-      function resetGame() {
-        round = 1;
-        won = 0;
-        lost = 0;
-        updateScoreboard();
-        unflipCards();
+        function unflipCards() {
+            cards.forEach(card => card.classList.remove('flipped'));
+        }
+
+        function shuffleCards() {
+            const positions = [0, 190, 380];
+            let animations = 10;
+            shuffleSound.play();
+            let shuffleInterval = setInterval(() => {
+                for (let i = positions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [positions[i], positions[j]] = [positions[j], positions[i]];
+                }
+                cards.forEach((card, index) => {
+                    card.style.left = positions[index] + 'px';
+                    if (card.querySelector('.front').textContent === '💰') {
+                        winningCardIndex = index;
+                    }
+                });
+                animations--;
+                if (animations === 0) {
+                    clearInterval(shuffleInterval);
+                    canClick = true;
+                    shuffleSound.pause();
+                    shuffleSound.currentTime = 0;
+                }
+            }, 500);
+        }
+
+        function revealCard(index) {
+            cards[index].classList.remove('flipped');
+            if (index === winningCardIndex) {
+                won++;
+                winSound.play();
+            } else {
+                lost++;
+                loseSound.play();
+            }
+            round++;
+            updateScoreboard();
+            startButton.disabled = false;
+            canClick = false;
+        }
+
+        function startCountdown() {
+            let count = 5;
+            countdownDisplay.textContent = count;
+            countdownSound.play();
+
+            const countdownInterval = setInterval(() => {
+                count--;
+                countdownDisplay.textContent = count;
+                if (count <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownDisplay.textContent = '';
+                    countdownSound.pause();
+                    countdownSound.currentTime = 0;
+                    flipCards();
+                    setTimeout(shuffleCards, 600);
+                }
+            }, 1000);
+        }
+
+        function startRound() {
+            unflipCards();
+            startButton.disabled = true;
+            startCountdown();
+        }
+
+        function resetGame() {
+            round = 1;
+            won = 0;
+            lost = 0;
+            updateScoreboard();
+            unflipCards();
+            cards.forEach((card, index) => {
+                card.style.left = (index * 190) + 'px';
+            });
+            winningCardIndex = 2;
+            startButton.disabled = false;
+            canClick = false;
+            countdownDisplay.textContent = '';
+        }
+
         cards.forEach((card, index) => {
-          card.style.left = index * 190 + 'px';
+            card.addEventListener('click', () => {
+                if (canClick) {
+                    revealCard(index);
+                }
+            });
         });
-        winningCardIndex = 2;
-        startButton.disabled = false;
-        canClick = false;
-      }
 
-      cards.forEach((card, index) => {
-        card.addEventListener('click', () => {
-          if (canClick) {
-            revealCard(index);
-          }
-        });
-      });
+        startButton.addEventListener('click', startRound);
+        resetButton.addEventListener('click', resetGame);
 
-      startButton.addEventListener('click', startRound);
-      resetButton.addEventListener('click', resetGame);
-
-      updateScoreboard();
+        updateScoreboard();
     </script>
-  </body>
+</body>
 </html>
