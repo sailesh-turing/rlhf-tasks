@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insertion Sort Visualization</title>
+    <style>
+        :root {
+            --primary-color: #4a4e69;
+            --secondary-color: #9a8c98;
+            --accent-color: #c9ada7;
+            --background-color: #f2e9e4;
+            --text-color: #22223b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 1200px;
+            width: 100%;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+        #startBtn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        #startBtn:disabled {
+            background-color: var(--secondary-color);
+            cursor: not-allowed;
+        }
+        .speed-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .speed-control button {
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            margin: 0 10px;
+            font-size: 1.5rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+        .speed-control span {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section h3 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 20px 0;
+            gap: 10px;
+        }
+        .array-item {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--accent-color);
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .bar-graph {
+            display: flex;
+            align-items: flex-end;
+            height: 250px;
+            border-bottom: 2px solid var(--primary-color);
+            justify-content: center;
+            gap: 5px;
+            padding-top: 20px;
+        }
+        .bar {
+            width: 40px;
+            background-color: var(--secondary-color);
+            transition: all 0.3s ease;
+            border-radius: 5px 5px 0 0;
+        }
+        .pointer {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5rem;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .outer-pointer {
+            color: #e63946;
+        }
+        .inner-pointer {
+            color: #457b9d;
+        }
+    </style>
+</head>
+<body>
+    <h1>Insertion Sort Visualization</h1>
+    <div class="container">
+        <div class="controls">
+            <button id="startBtn">Start Sorting</button>
+        </div>
+        <div class="section">
+            <h3>Original Sequence</h3>
+            <div id="originalSequence" class="array-container"></div>
+        </div>
+        <div class="section">
+            <h3>Current State</h3>
+            <div id="currentState" class="array-container"></div>
+        </div>
+        <div class="section">
+            <h3>Bar Graph</h3>
+            <div id="barGraph" class="bar-graph"></div>
+        </div>
+        <div class="speed-control">
+            <button id="decreaseSpeed">−</button>
+            <span>Speed</span>
+            <button id="increaseSpeed">+</button>
+        </div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('startBtn');
+        const decreaseSpeedBtn = document.getElementById('decreaseSpeed');
+        const increaseSpeedBtn = document.getElementById('increaseSpeed');
+        const originalSequence = document.getElementById('originalSequence');
+        const currentState = document.getElementById('currentState');
+        const barGraph = document.getElementById('barGraph');
+
+        let array = [];
+        let sortingSpeed = 500;
+        let sorting = false;
+
+        function generateRandomArray() {
+            array = Array.from({length: 20}, (_, i) => i + 1);
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function displayArray(container, arr, outerIndex = -1, innerIndex = -1) {
+            container.innerHTML = '';
+            arr.forEach((num, index) => {
+                const item = document.createElement('div');
+                item.className = 'array-item';
+                item.textContent = num;
+                if (index === outerIndex) {
+                    const pointer = document.createElement('div');
+                    pointer.className = 'pointer outer-pointer';
+                    pointer.textContent = '↓';
+                    item.appendChild(pointer);
+                }
+                if (index === innerIndex) {
+                    const pointer = document.createElement('div');
+                    pointer.className = 'pointer inner-pointer';
+                    pointer.textContent = '↓';
+                    item.appendChild(pointer);
+                }
+                container.appendChild(item);
+            });
+        }
+
+        function updateBarGraph(arr) {
+            barGraph.innerHTML = '';
+            const max = Math.max(...arr);
+            arr.forEach(num => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${(num / max) * 100}%`;
+                barGraph.appendChild(bar);
+            });
+        }
+
+        async function insertionSort() {
+            const n = array.length;
+            for (let i = 1; i < n; i++) {
+                let j = i - 1;
+                const key = array[i];
+                while (j >= 0 && array[j] > key) {
+                    array[j + 1] = array[j];
+                    displayArray(currentState, array, i, j);
+                    updateBarGraph(array);
+                    await new Promise(resolve => setTimeout(resolve, sortingSpeed));
+                    j--;
+                }
+                array[j + 1] = key;
+                displayArray(currentState, array, i, j + 1);
+                updateBarGraph(array);
+                await new Promise(resolve => setTimeout(resolve, sortingSpeed));
+            }
+            sorting = false;
+            startBtn.disabled = false;
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (!sorting) {
+                sorting = true;
+                startBtn.disabled = true;
+                generateRandomArray();
+                displayArray(originalSequence, array);
+                displayArray(currentState, array);
+                updateBarGraph(array);
+                insertionSort();
+            }
+        });
+
+        decreaseSpeedBtn.addEventListener('click', () => {
+            if (sortingSpeed < 1000) {
+                sortingSpeed += 100;
+            }
+        });
+
+        increaseSpeedBtn.addEventListener('click', () => {
+            if (sortingSpeed > 100) {
+                sortingSpeed -= 100;
+            }
+        });
+
+        // Initial display
+        generateRandomArray();
+        displayArray(originalSequence, array);
+        displayArray(currentState, array);
+        updateBarGraph(array);
+    </script>
+</body>
+</html>

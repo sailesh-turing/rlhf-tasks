@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insertion Sort Visualization</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 10px 0;
+        }
+        .number, .bar {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            text-align: center;
+            line-height: 40px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px #aaa, -2px -2px 5px #fff;
+            transition: all 0.3s ease;
+        }
+        .bar {
+            display: block;
+            width: 30px;
+            height: var(--height);
+            background: #3498db;
+            margin: 0 auto;
+        }
+        #startBtn, #speedButtons button {
+            margin: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #2ecc71;
+            color: white;
+            cursor: pointer;
+            box-shadow: 2px 2px 5px #aaa, -2px -2px 5px #fff;
+            transition: transform 0.1s;
+        }
+        #speedButtons button {
+            background: #e74c3c;
+        }
+        #startBtn:active, #speedButtons button:active {
+            transform: scale(0.98);
+        }
+        @keyframes swap {
+            50% { transform: translateY(-30px); opacity: 0.5; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Insertion Sort</h1>
+    <button id="startBtn">Start</button>
+    <div id="speedButtons">
+        <button id="speedUp">Speed Up</button>
+        <button id="slowDown">Slow Down</button>
+    </div>
+    <div class="container" id="originalSequence"></div>
+    <div class="container" id="currentSequence"></div>
+    <div class="container" id="barGraph"></div>
+
+    <script>
+        const numbers = Array.from({length: 20}, (_, i) => i + 1);
+        let delay = 500;
+        let intervalId;
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function insertionSort(arr) {
+            const n = arr.length;
+            for (let i = 1; i < n; i++) {
+                let key = arr[i];
+                let j = i - 1;
+
+                (function outer(i, j, key) {
+                    setTimeout(function() {
+                        updatePointers(i, j);
+                        while (j >= 0 && arr[j] > key) {
+                            (function inner(j, key) {
+                                setTimeout(function() {
+                                    swapElements(arr, j + 1, j);
+                                    arr[j + 1] = arr[j];
+                                    j--;
+                                    updatePointers(i, j);
+                                    if (j >= 0) {
+                                        setTimeout(() => updateBarGraph(arr), delay / 2);
+                                    }
+                                }, delay);
+                            })(j, key);
+                        }
+                        arr[j + 1] = key;
+                        updateBarGraph(arr);
+                        if (i === n - 1) clearInterval(intervalId);
+                    }, i * delay * n);
+                })(i, j, key);
+            }
+        }
+
+        function swapElements(arr, index1, index2) {
+            const el1 = document.querySelector(`#currentSequence .number:nth-child(${index1 + 1})`);
+            const el2 = document.querySelector(`#currentSequence .number:nth-child(${index2 + 1})`);
+            [el1.style.animation, el2.style.animation] = ['swap 0.5s ease', 'swap 0.5s ease'];
+            setTimeout(() => {
+                [arr[index1], arr[index2]] = [arr[index2], arr[index1]];
+                [el1.textContent, el2.textContent] = [el2.textContent, el1.textContent];
+                el1.style.animation = el2.style.animation = '';
+            }, 250);
+        }
+
+        function updatePointers(i, j) {
+            document.querySelectorAll('.pointer').forEach(p => p.remove());
+            const current = document.getElementById('currentSequence');
+            current.insertAdjacentHTML('beforeend', `<div class="pointer" style="color:red; left: ${i * 45 + 10}px;">▲</div>`);
+            if (j >= 0) current.insertAdjacentHTML('beforeend', `<div class="pointer" style="color:blue; left: ${j * 45 + 10}px;">▲</div>`);
+        }
+
+        function updateBarGraph(arr) {
+            const barGraph = document.getElementById('barGraph');
+            barGraph.innerHTML = '';
+            arr.forEach(num => {
+                barGraph.innerHTML += `<div class="bar" style="--height: ${num * 10}px;"></div>`;
+            });
+        }
+
+        document.getElementById('startBtn').addEventListener('click', function() {
+            this.disabled = true;
+            shuffle(numbers);
+            document.getElementById('originalSequence').innerHTML = numbers.map(n => `<div class="number">${n}</div>`).join('');
+            document.getElementById('currentSequence').innerHTML = numbers.map(n => `<div class="number">${n}</div>`).join('');
+            updateBarGraph(numbers);
+            intervalId = setTimeout(() => insertionSort(numbers.slice()), 1000);
+        });
+
+        document.getElementById('speedUp').addEventListener('click', () => delay = Math.max(100, delay - 100));
+        document.getElementById('slowDown').addEventListener('click', () => delay += 100);
+    </script>
+</body>
+</html>
