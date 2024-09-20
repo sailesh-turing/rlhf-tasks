@@ -258,7 +258,7 @@
             roughArea.textContent = '';
         }
 
-        // Modify the highlightDigits function to wrap each digit in a span
+        // Wrap each digit in a span for fine grained control
         async function highlightDigits(index) {
             const largerDigits = larger.textContent.split('').map(d => `<span class="number">${d}</span>`);
             const smallerDigits = smaller.textContent.split('').map(d => `<span class="number">${d}</span>`);
@@ -275,7 +275,7 @@
             await sleep(1000);
         }
 
-        // Modify the animateRoughArea function to wrap each step in a span
+        // Wrap each step in a span to animate one-by-one
         async function animateRoughArea(carry, digit1, digit2) {
             const steps = [carry, '+', digit1, '+', digit2, '=', (carry + digit1 + digit2).toString().padStart(2, '0')];
             for (const step of steps) {
