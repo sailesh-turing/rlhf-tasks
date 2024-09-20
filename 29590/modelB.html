@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Addition Widget for Kids</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body {
+    font-family: 'Roboto Mono', monospace;
+    background-color: #e0f7fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    color: #333;
+}
+
+.widget {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 80%;
+    max-width: 600px;
+    text-align: center;
+    perspective: 1000px;
+}
+
+.title {
+    color: #ff9800;
+    margin-bottom: 20px;
+}
+
+.input-container {
+    margin: 20px 0;
+}
+
+input[type="number"] {
+    width: 60px;
+    padding: 10px;
+    margin: 0 10px;
+    border: 2px solid #4CAF50;
+    border-radius: 5px;
+    font-size: 16px;
+    font-family: inherit;
+    transition: transform 0.3s;
+    transform-style: preserve-3d;
+}
+
+input[type="number"]:focus {
+    transform: rotateX(10deg);
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s;
+    transform-style: preserve-3d;
+}
+
+button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+.main-area, .rough-area {
+    margin-top: 20px;
+    min-height: 100px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+}
+
+.carry, .larger, .smaller, .result, .line {
+    min-height: 20px;
+    margin: 5px 0;
+}
+
+.highlight {
+    color: #ff5722;
+    transition: color 0.5s;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.blink {
+    animation: blink 0.5s step-end infinite;
+}
+
+@keyframes moveDigit {
+    from { transform: translateX(0) translateY(0); }
+    to { transform: translateX(calc(100% + 10px)) translateY(-100%); }
+}
+
+.moving-digit {
+    position: relative;
+    animation: moveDigit 1s forwards;
+}
+</style>
+</head>
+<body>
+
+<div class="widget">
+    <h1 class="title">How to Add Two Numbers?</h1>
+    <div class="input-container">
+        <input type="number" id="num1" min="0" placeholder="0">
+        <input type="number" id="num2" min="0" placeholder="0">
+        <button onclick="startAddition()">Add</button>
+    </div>
+    <div class="main-area">
+        <div class="carry"></div>
+        <div class="larger"></div>
+        <div class="smaller"></div>
+        <div class="line">──────────</div>
+        <div class="result"></div>
+    </div>
+    <div class="rough-area"></div>
+</div>
+
+<script>
+function startAddition() {
+    const num1 = document.getElementById('num1').value;
+    const num2 = document.getElementById('num2').value;
+    if (!num1 || !num2) return;
+
+    document.querySelector('button').disabled = true;
+    document.getElementById('num1').disabled = true;
+    document.getElementById('num2').disabled = true;
+
+    const mainArea = document.querySelector('.main-area');
+    const roughArea = document.querySelector('.rough-area');
+    
+    // Clear previous results
+    mainArea.querySelectorAll('div').forEach(div => div.textContent = '');
+    roughArea.textContent = '';
+
+    const largerNum = num1.length >= num2.length ? num1 : num2;
+    const smallerNum = num1.length < num2.length ? num1 : num2;
+
+    const addStepByStep = async () => {
+        let carry = 0;
+        let result = '';
+        document.querySelector('.larger').textContent = largerNum;
+        document.querySelector('.smaller').textContent = smallerNum;
+
+        for (let i = largerNum.length - 1; i >= 0; i--) {
+            const digit1 = parseInt(largerNum[i] || 0);
+            const digit2 = parseInt(smallerNum[i] || 0);
+            let sum = digit1 + digit2 + carry;
+
+            // Highlight current digits
+            highlightDigits(i);
+
+            // Rough area calculation
+            await displayRoughCalculation(digit1, digit2, carry);
+            
+            if (sum >= 10) {
+                carry = 1;
+                sum -= 10;
+            } else {
+                carry = 0;
+            }
+
+            result = sum.toString() + result;
+            animateDigitToResult(sum % 10, i, carry);
+            await new Promise(r => setTimeout(r, 1500));
+            clearRoughArea();
+        }
+
+        if (carry) result = '1' + result;
+        document.querySelector('.result').textContent = result;
+        document.querySelector('.result').classList.add('blink');
+        await new Promise(r => setTimeout(r, 1500));
+        document.querySelector('.result').classList.remove('blink');
+
+        // Re-enable inputs and button
+        document.querySelector('button').disabled = false;
+        document.getElementById('num1').disabled = false;
+        document.getElementById('num2').disabled = false;
+    };
+
+    const highlightDigits = (index) => {
+        const digits = document.querySelectorAll('.main-area div:not(.line) div');
+        digits.forEach((digit, idx) => {
+            if (idx === index) {
+                digit.classList.add('highlight');
+            } else {
+                digit.classList.remove('highlight');
+            }
+        });
+    };
+
+    const displayRoughCalculation = async (d1, d2, carry) => {
+        roughArea.innerHTML = `${carry ? '<span class="highlight">'+carry+'</span> + ' : ''}${d1} + ${d2} = ${carry+d1+d2 < 10 ? '0' : ''}${carry+d1+d2}`;
+        await new Promise(r => setTimeout(r, 1000));
+    };
+
+    const animateDigitToResult = (digit, position, carry) => {
+        const digitSpan = document.createElement('span');
+        digitSpan.textContent = digit;
+        digitSpan.classList.add('moving-digit');
+        roughArea.appendChild(digitSpan);
+        
+        setTimeout(() => {
+            const resultDiv = document.querySelector('.result');
+            const carryDiv = document.querySelector('.carry');
+            if (position === 0 && carry) carryDiv.textContent = '1';
+            resultDiv.textContent = resultDiv.textContent.slice(0, -position-1) + digit + resultDiv.textContent.slice(-position);
+            digitSpan.remove();
+        }, 1000);
+    };
+
+    const clearRoughArea = () => {
+        roughArea.textContent = '';
+    };
+
+    addStepByStep();
+}
+
+// Input validation
+document.querySelectorAll('input[type="number"]').forEach(input => {
+    input.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+});
+</script>
+
+</body>
+</html>

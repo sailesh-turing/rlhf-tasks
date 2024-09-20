@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to add two numbers?</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #83a4d4, #b6fbff);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 1px 8px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+            color: #4a4a4a;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 100px;
+            padding: 12px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(66, 153, 225, 0.5);
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 18px;
+            background: linear-gradient(45deg, #FF9A8B, #FF6A88);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(0);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .main-area {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            perspective: 1000px;
+        }
+
+        .calculation {
+            font-size: 28px;
+            text-align: right;
+            margin-right: 30px;
+            transform: rotateX(5deg);
+            transition: transform 0.3s ease;
+        }
+
+        .calculation:hover {
+            transform: rotateX(0deg);
+        }
+
+        .rough-area {
+            font-size: 24px;
+            text-align: left;
+            width: 180px;
+            height: 220px;
+            border-left: 2px solid #ddd;
+            padding-left: 20px;
+            transform: rotateX(5deg);
+            transition: transform 0.3s ease;
+        }
+
+        .rough-area:hover {
+            transform: rotateX(0deg);
+        }
+
+        .highlight {
+            color: #FF6A88;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .carry,
+        .larger,
+        .smaller,
+        .result {
+            height: 50px;
+            line-height: 50px;
+            white-space: pre;
+        }
+
+        .horizontal-line {
+            border-bottom: 2px solid #4a4a4a;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .moving-digit {
+            position: absolute;
+            font-size: 28px;
+            transition: all 1s ease-in-out;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .number {
+            display: inline-block;
+            transform: perspective(100px) translateZ(0px);
+            transition: transform 0.3s ease;
+        }
+
+        .number:hover {
+            transform: perspective(100px) translateZ(10px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>How to add two numbers?</h1>
+        <div class="input-container">
+            <input type="text" id="num1" placeholder="Number 1">
+            <input type="text" id="num2" placeholder="Number 2">
+            <button id="addBtn">Add</button>
+        </div>
+        <div class="main-area">
+            <div class="calculation">
+                <div class="carry"></div>
+                <div class="larger"></div>
+                <div class="smaller"></div>
+                <div class="horizontal-line"></div>
+                <div class="result"></div>
+            </div>
+            <div class="rough-area"></div>
+        </div>
+    </div>
+
+    <script>
+        const num1Input = document.getElementById('num1');
+        const num2Input = document.getElementById('num2');
+        const addBtn = document.getElementById('addBtn');
+        const carry = document.querySelector('.carry');
+        const larger = document.querySelector('.larger');
+        const smaller = document.querySelector('.smaller');
+        const result = document.querySelector('.result');
+        const roughArea = document.querySelector('.rough-area');
+        const container = document.querySelector('.container');
+
+        num1Input.addEventListener('input', validateInput);
+        num2Input.addEventListener('input', validateInput);
+        addBtn.addEventListener('click', startAddition);
+
+        function validateInput(e) {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        }
+
+        async function startAddition() {
+            let num1 = num1Input.value;
+            let num2 = num2Input.value;
+
+            if (!num1 || !num2) {
+                alert('Please enter two numbers');
+                return;
+            }
+
+            addBtn.disabled = true;
+            num1Input.disabled = true;
+            num2Input.disabled = true;
+
+            clearAreas();
+            await sleep(1000);
+
+            if (parseInt(num1) < parseInt(num2)) {
+                [num1, num2] = [num2, num1];
+            }
+
+            larger.textContent = num1;
+            smaller.textContent = num2.padStart(num1.length, ' ');
+            carry.textContent = ' '.repeat(num1.length + 1);
+
+            let carryOver = '';
+            for (let i = num1.length - 1; i >= 0; i--) {
+                await highlightDigits(i);
+                await performAddition(i, carryOver);
+                carryOver = carry.textContent[i] || '';
+            }
+
+            // Handle final carry if exists
+            if (carryOver !== ' ') {
+                await highlightDigits(-1);
+                result.textContent = carryOver + result.textContent.trimStart();
+            }
+
+            await blinkResult();
+
+            addBtn.disabled = false;
+            num1Input.disabled = false;
+            num2Input.disabled = false;
+        }
+
+        function clearAreas() {
+            carry.textContent = '';
+            larger.textContent = '';
+            smaller.textContent = '';
+            result.textContent = '';
+            roughArea.textContent = '';
+        }
+
+        // Modify the highlightDigits function to wrap each digit in a span
+        async function highlightDigits(index) {
+            const largerDigits = larger.textContent.split('').map(d => `<span class="number">${d}</span>`);
+            const smallerDigits = smaller.textContent.split('').map(d => `<span class="number">${d}</span>`);
+            const carryDigits = carry.textContent.split('').map(d => `<span class="number">${d}</span>`);
+
+            largerDigits[index] = `<span class="number highlight">${largerDigits[index]}</span>`;
+            smallerDigits[index] = `<span class="number highlight">${smallerDigits[index]}</span>`;
+            carryDigits[index + 1] = `<span class="number highlight">${carryDigits[index + 1]}</span>`;
+
+            larger.innerHTML = largerDigits.join('');
+            smaller.innerHTML = smallerDigits.join('');
+            carry.innerHTML = carryDigits.join('');
+
+            await sleep(1000);
+        }
+
+        // Modify the animateRoughArea function to wrap each step in a span
+        async function animateRoughArea(carry, digit1, digit2) {
+            const steps = [carry, '+', digit1, '+', digit2, '=', (carry + digit1 + digit2).toString().padStart(2, '0')];
+            for (const step of steps) {
+                roughArea.innerHTML += `<span class="number">${step}</span>`;
+                await sleep(500);
+            }
+            await sleep(1000);
+        }
+
+        async function performAddition(index, carryOver) {
+            const digit1 = parseInt(larger.textContent[index]) || 0;
+            const digit2 = parseInt(smaller.textContent[index]) || 0;
+            const carryDigit = parseInt(carryOver) || 0;
+
+            roughArea.innerHTML = '';
+            await animateRoughArea(carryDigit, digit1, digit2);
+
+            const sum = carryDigit + digit1 + digit2;
+            const resultDigit = sum % 10;
+            const newCarry = Math.floor(sum / 10);
+
+            await animateResult(resultDigit, index);
+            if (newCarry > 0) {
+                await animateCarry(newCarry, index);
+            }
+
+            await sleep(1000);
+            roughArea.innerHTML = '';
+        }
+
+        async function animateResult(digit, index) {
+            const resultDigits = result.textContent.padStart(larger.textContent.length, ' ').split('');
+
+            // Select only the unit's digit from the rough area
+            const sumElement = roughArea.lastElementChild;
+            const unitDigit = sumElement.textContent.slice(-1);
+
+            // Create a new element for the moving digit
+            const movingDigit = document.createElement('span');
+            movingDigit.textContent = unitDigit;
+            movingDigit.style.position = 'absolute';
+            movingDigit.classList.add('moving-digit');
+
+            // Position the new element over the unit's digit in the rough area
+            const roughRect = roughArea.getBoundingClientRect();
+            const sumRect = sumElement.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            movingDigit.style.left = `${sumRect.right - containerRect.left - 14}px`;  // 14px is approx. width of one digit
+            movingDigit.style.top = `${sumRect.top - containerRect.top}px`;
+            container.appendChild(movingDigit);
+
+            // Force a reflow
+            movingDigit.getBoundingClientRect();
+
+            // Set final position (in the result area)
+            const resultRect = result.getBoundingClientRect();
+            movingDigit.style.left = `${resultRect.left - containerRect.left + (index + 1) * 14}px`;
+            movingDigit.style.top = `${resultRect.top - containerRect.top}px`;
+
+            // Wait for the animation to complete
+            await sleep(1000);
+
+            // Update the result text and remove the moving digit
+            resultDigits[index] = unitDigit;
+            result.textContent = resultDigits.join('');
+            container.removeChild(movingDigit);
+        }
+
+        async function animateCarry(digit, index) {
+            // Select the ten's digit from the rough area
+            const sumElement = roughArea.lastElementChild;
+            const tenDigit = sumElement.textContent.slice(-2, -1);
+
+            // Create a new element for the moving carry
+            const movingCarry = document.createElement('span');
+            movingCarry.textContent = tenDigit;
+            movingCarry.style.position = 'absolute';
+            movingCarry.classList.add('moving-digit');
+
+            // Position the new element over the ten's digit in the rough area
+            const roughRect = roughArea.getBoundingClientRect();
+            const sumRect = sumElement.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            movingCarry.style.left = `${sumRect.right - containerRect.left - 28}px`;  // 28px is approx. width of two digits
+            movingCarry.style.top = `${sumRect.top - containerRect.top}px`;
+            container.appendChild(movingCarry);
+
+            // Force a reflow
+            movingCarry.getBoundingClientRect();
+
+            // Set final position (in the carry area)
+            const carryRect = carry.getBoundingClientRect();
+            movingCarry.style.left = `${carryRect.left - containerRect.left + (index + 1) * 14}px`;
+            movingCarry.style.top = `${carryRect.top - containerRect.top}px`;
+
+            // Wait for the animation to complete
+            await sleep(1000);
+
+            // Update the carry text and remove the moving carry
+            const carryDigits = carry.textContent.split('');
+            carryDigits[index] = tenDigit;
+            carry.textContent = carryDigits.join('');
+            container.removeChild(movingCarry);
+        }
+
+        async function blinkResult() {
+            for (let i = 0; i < 3; i++) {
+                result.style.visibility = 'hidden';
+                await sleep(300);
+                result.style.visibility = 'visible';
+                await sleep(300);
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+
+</html>
