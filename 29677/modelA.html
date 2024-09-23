@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sieve of Eratosthenes</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .title,
+        .subtitle {
+            text-align: center;
+        }
+
+        .sieve-grid {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .number {
+            width: 30px;
+            height: 30px;
+            margin: 2px;
+            background: #ddd;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.3s;
+        }
+
+        .number.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .number.deactivated {
+            background: #f44336;
+        }
+
+        .button {
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #444;
+        }
+
+        .commentary {
+            min-height: 50px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="title">Sieve of Eratosthenes</h1>
+        <h2 class="subtitle">How to find prime numbers?</h2>
+        <input type="number" id="numInput" min="2" value="30">
+        <button id="startBtn" class="button">Start</button>
+        <button id="speedUp" class="button">Speed Up</button>
+        <button id="slowDown" class="button">Slow Down</button>
+        <div id="commentary" class="commentary"></div>
+        <div id="sieve" class="sieve-grid"></div>
+    </div>
+
+    <script>
+        const input = document.getElementById('numInput');
+        const startBtn = document.getElementById('startBtn');
+        const speedUpBtn = document.getElementById('speedUp');
+        const slowDownBtn = document.getElementById('slowDown');
+        const commentary = document.getElementById('commentary');
+        const sieve = document.getElementById('sieve');
+        let delay = 500; // Initial delay for visualization
+
+        function isValid(n) {
+            return Number.isInteger(Number(n)) && n > 1;
+        }
+
+        function createSieve(n) {
+            sieve.innerHTML = '';
+            const cols = n < 100 ? 10 : Math.floor(Math.sqrt(n) / 10) * 10;
+            for (let i = 1; i <= n; i++) {
+                let div = document.createElement('div');
+                div.className = 'number active';
+                div.textContent = i;
+                div.style.width = `${100 / cols}%`;
+                sieve.appendChild(div);
+            }
+        }
+
+        function deactivateNumber(i) {
+            if (i > 1) {
+                sieve.children[i - 1].classList.remove('active');
+                sieve.children[i - 1].classList.add('deactivated');
+            }
+        }
+
+        function primeBlink(primeNumbers) {
+            primeNumbers.forEach(i => {
+                setTimeout(() => {
+                    sieve.children[i - 1].style.animation = 'blink 1s infinite';
+                }, delay * i);
+            });
+        }
+
+        async function sieveOfEratosthenes(n) {
+            if (!isValid(n)) {
+                alert('Please enter an integer greater than 1');
+                return;
+            }
+            startBtn.disabled = true;
+            input.disabled = true;
+            commentary.textContent = ''; // Clear previous commentary
+            createSieve(n);
+
+            let primes = new Array(n + 1).fill(true);
+            primes[1] = false; // 1 is not prime
+            commentary.textContent = "1 is neither prime nor composite.";
+            await new Promise(r => setTimeout(r, delay));
+            deactivateNumber(1);
+
+            for (let i = 2; i <= Math.sqrt(n); i++) {
+                if (primes[i]) {
+                    commentary.textContent = `We struck out all other multiples of ${i}. Next prime number is ${i}. Let us strike out all multiples of ${i}, except ${i}.`;
+                    await new Promise(r => setTimeout(r, delay));
+                    for (let j = i * i; j <= n; j += i) {
+                        if (j !== i) {
+                            primes[j] = false;
+                            deactivateNumber(j);
+                            await new Promise(r => setTimeout(r, delay));
+                        }
+                    }
+                }
+            }
+
+            commentary.textContent = `It is sufficient to run the sieve until square root of ${n}. All the integers not struck out by now are primes.`;
+            let primeNumbers = primes.map((isPrime, index) => isPrime ? index : null).filter(x => x !== null);
+            primeBlink(primeNumbers);
+
+            startBtn.disabled = false;
+            input.disabled = false;
+        }
+
+        startBtn.onclick = () => sieveOfEratosthenes(Number(input.value));
+        speedUpBtn.onclick = () => delay = Math.max(100, delay - 100);
+        slowDownBtn.onclick = () => delay += 100;
+    </script>
+</body>
+
+</html>

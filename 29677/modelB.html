@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sieve of Eratosthenes</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .widget {
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+            padding: 20px;
+            text-align: center;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+            transform: translateZ(20px);
+        }
+
+        input,
+        button {
+            margin: 10px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            transform: translateZ(15px);
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        button:hover {
+            transform: translateZ(25px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            width: 400px;
+        }
+
+        .cell {
+            width: 38px;
+            height: 38px;
+            line-height: 38px;
+            margin: 1px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.5s;
+        }
+
+        .active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .inactive {
+            background: #ff4444;
+            color: white;
+            opacity: 0.5;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .blink {
+            animation: blink 0.5s step-end infinite;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="widget" id="sieveWidget">
+        <h1>Sieve of Eratosthenes</h1>
+        <h2>How to find out prime numbers?</h2>
+        <input type="number" id="numberInput" min="2" value="50">
+        <button id="startBtn">Start</button>
+        <button id="speedUp">+ Speed</button>
+        <button id="slowDown">- Speed</button>
+        <div id="commentary"></div>
+        <div id="sieveGrid" class="grid"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const startBtn = document.getElementById('startBtn');
+            const speedUpBtn = document.getElementById('speedUp');
+            const slowDownBtn = document.getElementById('slowDown');
+            const numberInput = document.getElementById('numberInput');
+            const commentary = document.getElementById('commentary');
+            const sieveGrid = document.getElementById('sieveGrid');
+            let speed = 500;
+            let intervalId = null;
+
+            function createGrid(n, columns) {
+                sieveGrid.innerHTML = '';
+                for (let i = 1; i <= n; i++) {
+                    let cell = document.createElement('div');
+                    cell.className = 'cell active';
+                    cell.textContent = i;
+                    cell.id = `cell-${i}`;
+                    sieveGrid.appendChild(cell);
+                    if (i % columns === 0) sieveGrid.appendChild(document.createElement('br'));
+                }
+            }
+
+            function updateCommentary(text) {
+                commentary.textContent = text;
+            }
+
+            function deactivateCell(num) {
+                document.getElementById(`cell-${num}`).className = 'cell inactive';
+            }
+
+            function blinkPrimes() {
+                let cells = document.querySelectorAll('.active');
+                cells.forEach(cell => cell.classList.add('blink'));
+                setTimeout(() => {
+                    cells.forEach(cell => cell.classList.remove('blink'));
+                }, 3000);
+            }
+
+            function sieveOfEratosthenes(n) {
+                let primes = new Array(n + 1).fill(true);
+                primes[0] = primes[1] = false;
+                updateCommentary("1 is neither prime nor composite.");
+                setTimeout(() => {
+                    deactivateCell(1);
+                    let p = 2;
+                    function nextStep() {
+                        if (p * p > n) {
+                            updateCommentary(`It is sufficient to run the sieve until √${n}. All integers not struck out by now are primes.`);
+                            blinkPrimes();
+                            clearInterval(intervalId);
+                            startBtn.disabled = false;
+                            numberInput.disabled = false;
+                            return;
+                        }
+                        if (primes[p]) {
+                            updateCommentary(`We struck out all other multiples of ${p}. Next prime number is ${p}. Let us strike out all multiples of ${p}, except ${p}.`);
+                            for (let i = p * p; i <= n; i += p) {
+                                if (i !== p) {
+                                    setTimeout(() => deactivateCell(i), speed * (i - p * p) / p);
+                                    primes[i] = false;
+                                }
+                            }
+                        }
+                        p++;
+                        setTimeout(nextStep, speed);
+                    }
+                    nextStep();
+                }, speed);
+            }
+
+            startBtn.onclick = function () {
+                let n = parseInt(numberInput.value);
+                if (n < 2) {
+                    updateCommentary("Please enter an integer greater than 1.");
+                    return;
+                }
+                startBtn.disabled = true;
+                numberInput.disabled = true;
+                updateCommentary("");
+                let columns = n < 100 ? 10 : Math.floor(Math.sqrt(n) / 10) * 10;
+                createGrid(n, columns);
+                setTimeout(() => sieveOfEratosthenes(n), 1000);
+            };
+
+            speedUpBtn.onclick = () => speed = Math.max(100, speed - 100);
+            slowDownBtn.onclick = () => speed += 100;
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sieve of Eratosthenes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        :root {
+            --primary-color: #6200ee;
+            --primary-light: #9c4dff;
+            --primary-dark: #0400ba;
+            --secondary-color: #03dac6;
+            --background-color: #f5f5f5;
+            --surface-color: #ffffff;
+            --text-color: #333333;
+            --prime-color: #ff4081;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-color);
+        }
+
+        .container {
+            background-color: var(--surface-color);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 95%;
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow-x: auto;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        h1 {
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-weight: 300;
+            color: var(--primary-light);
+        }
+
+        .input-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        input,
+        button {
+            font-size: 1em;
+            padding: 12px 20px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        input {
+            width: 150px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .speed-control {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        #commentary {
+            text-align: center;
+            min-height: 60px;
+            margin: 30px auto;
+            font-weight: 400;
+            font-size: 1.5em;
+            color: var(--primary-color);
+            max-width: 80%;
+            padding: 15px 25px;
+            background-color: rgba(98, 0, 238, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #commentary.highlight {
+            animation: commentaryPulse 0.5s ease-out;
+        }
+
+        @keyframes commentaryPulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        #sieve {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 0 auto;
+        }
+
+        .number {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            border-radius: 50%;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .number.inactive {
+            background-color: var(--background-color);
+            color: #999;
+            transform: scale(0.9);
+        }
+
+        .number.prime {
+            animation: primePulse 1.5s infinite;
+            background-color: var(--prime-color);
+            color: white;
+        }
+
+        @keyframes primePulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 4px 8px rgba(255, 64, 129, 0.3);
+            }
+
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 8px 16px rgba(255, 64, 129, 0.5);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Sieve of Eratosthenes</h1>
+        <h2>Discover Prime Numbers</h2>
+        <div class="input-container">
+            <input type="number" id="input" min="2" placeholder="Enter a number">
+            <button id="start">Start</button>
+        </div>
+        <div class="speed-control">
+            <button id="decrease-speed">Slower</button>
+            <button id="increase-speed">Faster</button>
+        </div>
+        <div id="commentary"></div>
+        <div id="sieve"></div>
+    </div>
+
+    <script>
+
+        const input = document.getElementById('input');
+        const startButton = document.getElementById('start');
+        const decreaseSpeedButton = document.getElementById('decrease-speed');
+        const increaseSpeedButton = document.getElementById('increase-speed');
+        const commentary = document.getElementById('commentary');
+        const sieve = document.getElementById('sieve');
+
+        let speed = 1000;
+        let timeoutId;
+
+        startButton.addEventListener('click', startSieve);
+        decreaseSpeedButton.addEventListener('click', () => changeSpeed(100));
+        increaseSpeedButton.addEventListener('click', () => changeSpeed(-100));
+
+        function changeSpeed(delta) {
+            speed = Math.max(100, Math.min(2000, speed + delta));
+        }
+
+        async function startSieve() {
+            const n = parseInt(input.value);
+            if (isNaN(n) || n < 2) {
+                alert('Please enter an integer greater than 1');
+                return;
+            }
+
+            startButton.disabled = true;
+            input.disabled = true;
+            sieve.innerHTML = '';
+            commentary.textContent = '';
+
+            await pause(speed);
+
+            const cols = calculateColumns(n);
+            createSieve(n, cols);
+
+            await showCommentary('1 is neither prime nor composite.');
+            document.getElementById('number-1').classList.add('inactive');
+
+            await showCommentary('2 is the first prime number. Let us strike out all other multiples of 2.');
+            await markMultiples(2, n);
+
+            let previousPrime = 2;
+            for (let i = 3; i <= Math.sqrt(n); i += 2) {
+                if (!document.getElementById(`number-${i}`).classList.contains('inactive')) {
+                    await showCommentary(`We struck out all other multiples of ${previousPrime}. Next prime number is ${i}. Let us strike out all multiples of ${i}, except ${i}.`);
+                    await markMultiples(i, n);
+                    previousPrime = i;
+                }
+            }
+
+            await showCommentary(`It is sufficient to run the sieve until square root of ${n}. All the integers which are not struck out by now are primes.`);
+            highlightPrimes(n);
+
+            startButton.disabled = false;
+            input.disabled = false;
+        }
+
+        function calculateColumns(n) {
+            if (n < 100) {
+                return 10;
+            } else {
+                const sqrtN = Math.floor(Math.sqrt(n));
+                return Math.floor(sqrtN / 10) * 10;
+            }
+        }
+
+        function createSieve(n, cols) {
+            const cellSize = 40; // Size of each number cell
+            const gap = 10; // Gap between cells
+            const sieveWidth = cols * (cellSize + gap) - gap; // Calculate total width
+            sieve.style.width = `${sieveWidth}px`;
+
+            for (let i = 1; i <= n; i++) {
+                const numberDiv = document.createElement('div');
+                numberDiv.id = `number-${i}`;
+                numberDiv.className = 'number';
+                numberDiv.textContent = i;
+                sieve.appendChild(numberDiv);
+            }
+        }
+
+        async function markMultiples(start, n) {
+            for (let i = start * 2; i <= n; i += start) {
+                const numberDiv = document.getElementById(`number-${i}`);
+                numberDiv.classList.add('inactive');
+                await pause(speed / 10);
+            }
+            await pause(1000);
+        }
+
+        function highlightPrimes(n) {
+            for (let i = 2; i <= n; i++) {
+                const numberDiv = document.getElementById(`number-${i}`);
+                if (!numberDiv.classList.contains('inactive')) {
+                    numberDiv.classList.add('prime');
+                }
+            }
+        }
+
+        async function showCommentary(text) {
+            const commentaryElement = document.getElementById('commentary');
+            commentaryElement.textContent = text;
+            commentaryElement.classList.add('highlight');
+            await pause(2000);  // Short pause to ensure the class is added
+            commentaryElement.classList.remove('highlight');
+            await pause(speed);
+        }
+
+        function pause(ms) {
+            return new Promise(resolve => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(resolve, ms);
+            });
+        }
+    </script>
+</body>
+
+</html>
