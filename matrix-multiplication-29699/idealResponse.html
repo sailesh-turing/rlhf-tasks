@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Multiplication Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Poppins:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a4a4a;
+            margin-bottom: 30px;
+            font-size: 36px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            background-color: #f0f0f0;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .matrix-input {
+            width: 48%;
+            text-align: center;
+        }
+
+        .matrix-input h2 {
+            margin-bottom: 15px;
+            color: #4a4a4a;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        input[type="number"] {
+            width: 70px;
+            padding: 10px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.5);
+        }
+
+        button {
+            display: block;
+            margin: 30px auto;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:disabled {
+            background: linear-gradient(135deg, #cccccc 0%, #999999 100%);
+            cursor: not-allowed;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        #mainArea,
+        #roughArea {
+            font-family: 'Caveat', cursive;
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 15px;
+            min-height: 120px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        #mainArea {
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            font-size: 28px;
+            text-align: center;
+        }
+
+        #roughArea {
+            background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%);
+            text-align: center;
+            font-size: 32px;
+        }
+
+        .matrix {
+            display: inline-block;
+            margin: 0 15px;
+            vertical-align: middle;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .matrix-row {
+            display: flex;
+            justify-content: center;
+        }
+
+        .matrix-element {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 3px;
+            background-color: #fff;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+            transition: all 0.5s ease;
+        }
+
+        .highlighted {
+            background-color: #ffeb3b;
+            border-color: #fdd835;
+            box-shadow: 0 0 10px #fdd835;
+        }
+
+        .called-out {
+            background-color: #ff9800;
+            border-color: #f57c00;
+            box-shadow: 0 0 15px #f57c00;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.7);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .pulse {
+            animation: pulse 1s ease-in-out;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .blink {
+            animation: blink 0.5s ease-in-out 3;
+        }
+
+        .operation-sign {
+            font-size: 48px;
+            margin: 0 20px;
+            vertical-align: middle;
+            color: #4a4a4a;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Matrix Multiplication</h1>
+        <div class="input-section">
+            <div class="matrix-input">
+                <h2>Matrix A</h2>
+                <input type="number" id="rowsA" placeholder="Rows" min="1">
+                <input type="number" id="colsA" placeholder="Columns" min="1">
+            </div>
+            <div class="matrix-input">
+                <h2>Matrix B</h2>
+                <input type="number" id="rowsB" placeholder="Rows" min="1">
+                <input type="number" id="colsB" placeholder="Columns" min="1">
+            </div>
+        </div>
+        <button id="multiplyBtn" disabled>Multiply A and B</button>
+        <div id="mainArea"></div>
+        <div id="roughArea"></div>
+    </div>
+
+    <script>
+        const rowsA = document.getElementById('rowsA');
+        const colsA = document.getElementById('colsA');
+        const rowsB = document.getElementById('rowsB');
+        const colsB = document.getElementById('colsB');
+        const multiplyBtn = document.getElementById('multiplyBtn');
+        const mainArea = document.getElementById('mainArea');
+        const roughArea = document.getElementById('roughArea');
+
+        let matrixA, matrixB, matrixC;
+
+        function validateInputs() {
+            const inputs = [rowsA, colsA, rowsB, colsB];
+            multiplyBtn.disabled = inputs.some(input => input.value === '');
+        }
+
+        [rowsA, colsA, rowsB, colsB].forEach(input => {
+            input.addEventListener('input', validateInputs);
+        });
+
+        multiplyBtn.addEventListener('click', startMultiplication);
+
+        function startMultiplication() {
+            const dimensions = [rowsA, colsA, rowsB, colsB].map(input => parseInt(input.value));
+            if (dimensions.some(dim => dim < 1 || isNaN(dim))) {
+                alert("Row count and column count should be positive integers.");
+                return;
+            }
+            if (dimensions[1] !== dimensions[2]) {
+                alert("Matrix A cannot be multiplied with Matrix B. The number of columns in Matrix A must be equal to the number of rows in Matrix B.");
+                return;
+            }
+            disableInputs();
+            generateMatrices(dimensions);
+            displayMatrices();
+            setTimeout(() => multiplyMatrices(), 1500);
+        }
+
+        function disableInputs() {
+            [rowsA, colsA, rowsB, colsB, multiplyBtn].forEach(el => el.disabled = true);
+        }
+
+        function enableInputs() {
+            [rowsA, colsA, rowsB, colsB, multiplyBtn].forEach(el => el.disabled = false);
+        }
+
+        function generateMatrices(dimensions) {
+            matrixA = generateRandomMatrix(dimensions[0], dimensions[1]);
+            matrixB = generateRandomMatrix(dimensions[2], dimensions[3]);
+            matrixC = Array(dimensions[0]).fill().map(() => Array(dimensions[3]).fill('-'));
+        }
+
+        function generateRandomMatrix(rows, cols) {
+            return Array(rows).fill().map(() =>
+                Array(cols).fill().map(() => Math.floor(Math.random() * 41) - 20)
+            );
+        }
+
+        function displayMatrices() {
+            mainArea.innerHTML = `
+                ${createMatrixHTML(matrixA, 'A')}
+                <span class="operation-sign">×</span>
+                ${createMatrixHTML(matrixB, 'B')}
+                <span class="operation-sign">=</span>
+                ${createMatrixHTML(matrixC, 'C')}
+            `;
+        }
+
+        function createMatrixHTML(matrix, label) {
+            return `
+                <div class="matrix" id="matrix${label}">
+                    ${matrix.map((row, i) => `
+                        <div class="matrix-row" id="matrix${label}Row${i}">
+                            ${row.map((val, j) => `
+                                <div class="matrix-element" id="matrix${label}${i}-${j}">${val}</div>
+                            `).join('')}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        async function multiplyMatrices() {
+            for (let i = 0; i < matrixA.length; i++) {
+                for (let j = 0; j < matrixB[0].length; j++) {
+                    await multiplyElement(i, j);
+                }
+            }
+            document.querySelector('#matrixC').classList.add('pulse');
+            setTimeout(() => {
+                document.querySelector('#matrixC').classList.remove('pulse');
+                enableInputs();
+            }, 1500);
+        }
+
+        async function multiplyElement(row, col) {
+            highlightElements(row, col);
+            roughArea.innerHTML = '';
+            let sum = 0;
+            for (let k = 0; k < matrixA[0].length; k++) {
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                const a = matrixA[row][k];
+                const b = matrixB[k][col];
+                callOutElements(row, k, k, col);
+                roughArea.innerHTML += `${k > 0 ? ' + ' : ''}${a} × ${b}`;
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                sum += a * b;
+                roughArea.innerHTML = roughArea.innerHTML.replace(`${a} × ${b}`, `${a * b}`);
+            }
+            roughArea.classList.add('blink');
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            roughArea.innerHTML = sum;
+            roughArea.classList.remove('blink');
+            roughArea.classList.add('blink');
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            updateMatrixC(row, col, sum);
+            roughArea.classList.remove('blink');
+            roughArea.innerHTML = '';
+        }
+
+        function highlightElements(row, col) {
+            document.querySelectorAll('.highlighted, .called-out').forEach(el => {
+                el.classList.remove('highlighted', 'called-out');
+            });
+            document.querySelectorAll(`#matrixARow${row} .matrix-element`).forEach(el => {
+                el.classList.add('highlighted');
+            });
+            for (let i = 0; i < matrixB.length; i++) {
+                document.querySelector(`#matrixB${i}-${col}`).classList.add('highlighted');
+            }
+        }
+
+        function callOutElements(rowA, colA, rowB, colB) {
+            document.querySelectorAll('.called-out').forEach(el => {
+                el.classList.remove('called-out');
+            });
+            document.querySelector(`#matrixA${rowA}-${colA}`).classList.add('called-out');
+            document.querySelector(`#matrixB${rowB}-${colB}`).classList.add('called-out');
+        }
+
+        function updateMatrixC(row, col, value) {
+            const element = document.querySelector(`#matrixC${row}-${col}`);
+            element.textContent = value;
+            element.classList.add('pulse');
+            setTimeout(() => element.classList.remove('pulse'), 1000);
+        }
+    </script>
+</body>
+
+</html>
