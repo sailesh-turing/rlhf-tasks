@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Element Learning Game</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .game-container {
+            max-width: 800px;
+            margin: auto;
+            text-align: center;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .tile {
+            width: 50px;
+            height: 50px;
+            margin: 2px;
+            background: #3498db;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 5px;
+            border-radius: 10px;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .tile .front,
+        .tile .back {
+            backface-visibility: hidden;
+        }
+
+        .tile .back {
+            transform: rotateY(180deg);
+        }
+
+        .tile.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .question-area,
+        .result {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .correct {
+            background-color: #28a745;
+        }
+
+        .wrong {
+            background-color: #dc3545;
+        }
+
+        .time-up {
+            background-color: #ffc107;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="game-container">
+        <h1>Learn the Elements</h1>
+        <div id="questionArea" class="question-area"></div>
+        <div id="result" class="result"></div>
+        <button id="playButton" class="btn btn-primary">Play</button>
+        <div id="countdown"></div>
+        <div id="periodicTable" style="display: flex; flex-wrap: wrap; justify-content: center;"></div>
+    </div>
+
+    <script>
+        const elements = [{ atomicNumber: 1, symbol: 'H', name: 'Hydrogen' }, /* ... rest of the elements ... */];
+        let currentElement, timer, isGameActive = false;
+
+        function initGame() {
+            const table = document.getElementById('periodicTable');
+            elements.forEach(el => {
+                let tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.innerHTML = `<div class="front"></div><div class="back"><span>${el.atomicNumber}</span><span>${el.symbol}</span><span>${el.name}</span></div>`;
+                tile.onclick = () => selectElement(el);
+                table.appendChild(tile);
+            });
+
+            document.getElementById('playButton').onclick = startGame;
+        }
+
+        function startGame() {
+            document.querySelectorAll('.tile').forEach(tile => tile.classList.add('flipped'));
+            document.getElementById('playButton').disabled = true;
+            isGameActive = true;
+            startCountdown(30, revealTable);
+            setTimeout(() => {
+                if (isGameActive) {
+                    currentElement = elements[Math.floor(Math.random() * elements.length)];
+                    document.getElementById('questionArea').textContent = currentElement.name;
+                    startCountdown(30, checkAnswer);
+                }
+            }, 30000);
+        }
+
+        function revealTable() {
+            document.querySelectorAll('.tile').forEach(tile => tile.classList.remove('flipped'));
+        }
+
+        function startCountdown(seconds, callback) {
+            let time = seconds;
+            const countdownEl = document.getElementById('countdown');
+            const tick = () => {
+                if (time > 0) {
+                    countdownEl.textContent = time--;
+                    timer = setTimeout(tick, 1000);
+                } else {
+                    callback();
+                }
+            };
+            tick();
+        }
+
+        function selectElement(selectedElement) {
+            if (!isGameActive) return;
+            clearTimeout(timer);
+            checkAnswer(selectedElement);
+        }
+
+        function checkAnswer(selectedElement = null) {
+            isGameActive = false;
+            const resultEl = document.getElementById('result');
+            if (selectedElement && selectedElement.name === currentElement.name) {
+                resultEl.textContent = "Correct!";
+                resultEl.className = 'result correct';
+            } else if (!selectedElement) {
+                resultEl.textContent = "Time Up!";
+                resultEl.className = 'result time-up';
+            } else {
+                resultEl.textContent = "Wrong!";
+                resultEl.className = 'result wrong';
+            }
+            document.getElementById('playButton').disabled = false;
+            revealTable(); // Optionally keep the table revealed or mask it again
+        }
+
+        initGame();
+    </script>
+
+</body>
+
+</html>

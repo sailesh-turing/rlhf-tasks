@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemical Elements Learning Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a1a2e;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #16213e;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 1400px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #00fff5;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(0, 255, 245, 0.5);
+        }
+        .question-area {
+            background-color: #0f3460;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        #question, #result {
+            font-size: 1.6em;
+            margin: 10px 50px;
+            padding: 25px;
+            border-radius: 8px;
+        }
+        #question {
+            background-color: #1a1a2e;
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+        #question.pulse {
+            animation: pulse 2s infinite;
+        }
+        #result.correct {
+            background-color: #4caf50;
+            color: #ffffff;
+        }
+        #result.wrong {
+            background-color: #f44336;
+            color: #ffffff;
+        }
+        #result.timeout {
+            background-color: #ff9800;
+            color: #ffffff;
+        }
+        #countdown {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 15px 0;
+            color: #00fff5;
+        }
+        #playButton {
+            background-color: #e94560;
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 18px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
+        }
+        #playButton:hover {
+            background-color: #d64161;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(233, 69, 96, 0.6);
+        }
+        #playButton:disabled {
+            background-color: #7d7d7d;
+            color: #e0e0e0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .periodic-table {
+            display: grid;
+            grid-template-columns: repeat(18, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 4px;
+            margin-top: 30px;
+        }
+        .element {
+            aspect-ratio: 1;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .element-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+        .element.flipped .element-inner {
+            transform: rotateY(180deg);
+        }
+        .element-front, .element-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            box-sizing: border-box;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        .element-front {
+            background-color: #533483;
+        }
+        .element-back {
+            background-color: #0f3460;
+            transform: rotateY(180deg);
+        }
+
+        .atomic-number {
+            font-size: 0.9em;
+            align-self: flex-start;
+            color: #e94560;
+        }
+        .symbol {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #00fff5;
+        }
+        .name {
+            font-size: 0.8em;
+            color: #ffffff;
+            word-wrap: break-word;
+            max-width: 100%;
+            text-align: center;
+        }
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 245, 0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 20px rgba(0, 255, 245, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 245, 0);
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                padding: 20px;
+            }
+            .periodic-table {
+                gap: 3px;
+            }
+            .atomic-number {
+                font-size: 0.8em;
+            }
+            .symbol {
+                font-size: 1.2em;
+            }
+            .name {
+                font-size: 0.7em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .periodic-table {
+                gap: 2px;
+            }
+            .atomic-number {
+                font-size: 0.7em;
+            }
+            .symbol {
+                font-size: 1em;
+            }
+            .name {
+                font-size: 0.6em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chemical Elements Quest</h1>
+        <div class="question-area">
+            <div id="question">Ready to test your element knowledge?</div>
+            <div id="countdown"></div>
+            <div id="result"></div>
+            <button id="playButton">Start Quest</button>
+        </div>
+        <div class="periodic-table" id="periodicTable"></div>
+    </div>
+
+    <script>
+        const elements = [
+            {number: 1, symbol: 'H', name: 'Hydrogen'}, {number: 2, symbol: 'He', name: 'Helium'},
+            {number: 3, symbol: 'Li', name: 'Lithium'}, {number: 4, symbol: 'Be', name: 'Beryllium'},
+            {number: 5, symbol: 'B', name: 'Boron'}, {number: 6, symbol: 'C', name: 'Carbon'},
+            {number: 7, symbol: 'N', name: 'Nitrogen'}, {number: 8, symbol: 'O', name: 'Oxygen'},
+            {number: 9, symbol: 'F', name: 'Fluorine'}, {number: 10, symbol: 'Ne', name: 'Neon'},
+            {number: 11, symbol: 'Na', name: 'Sodium'}, {number: 12, symbol: 'Mg', name: 'Magnesium'},
+            {number: 13, symbol: 'Al', name: 'Aluminum'}, {number: 14, symbol: 'Si', name: 'Silicon'},
+            {number: 15, symbol: 'P', name: 'Phosphorus'}, {number: 16, symbol: 'S', name: 'Sulfur'},
+            {number: 17, symbol: 'Cl', name: 'Chlorine'}, {number: 18, symbol: 'Ar', name: 'Argon'},
+            {number: 19, symbol: 'K', name: 'Potassium'}, {number: 20, symbol: 'Ca', name: 'Calcium'},
+            {number: 21, symbol: 'Sc', name: 'Scandium'}, {number: 22, symbol: 'Ti', name: 'Titanium'},
+            {number: 23, symbol: 'V', name: 'Vanadium'}, {number: 24, symbol: 'Cr', name: 'Chromium'},
+            {number: 25, symbol: 'Mn', name: 'Manganese'}, {number: 26, symbol: 'Fe', name: 'Iron'},
+            {number: 27, symbol: 'Co', name: 'Cobalt'}, {number: 28, symbol: 'Ni', name: 'Nickel'},
+            {number: 29, symbol: 'Cu', name: 'Copper'}, {number: 30, symbol: 'Zn', name: 'Zinc'},
+            {number: 31, symbol: 'Ga', name: 'Gallium'}, {number: 32, symbol: 'Ge', name: 'Germanium'},
+            {number: 33, symbol: 'As', name: 'Arsenic'}, {number: 34, symbol: 'Se', name: 'Selenium'},
+            {number: 35, symbol: 'Br', name: 'Bromine'}, {number: 36, symbol: 'Kr', name: 'Krypton'},
+            {number: 37, symbol: 'Rb', name: 'Rubidium'}, {number: 38, symbol: 'Sr', name: 'Strontium'},
+            {number: 39, symbol: 'Y', name: 'Yttrium'}, {number: 40, symbol: 'Zr', name: 'Zirconium'},
+            {number: 41, symbol: 'Nb', name: 'Niobium'}, {number: 42, symbol: 'Mo', name: 'Molybdenum'},
+            {number: 43, symbol: 'Tc', name: 'Technetium'}, {number: 44, symbol: 'Ru', name: 'Ruthenium'},
+            {number: 45, symbol: 'Rh', name: 'Rhodium'}, {number: 46, symbol: 'Pd', name: 'Palladium'},
+            {number: 47, symbol: 'Ag', name: 'Silver'}, {number: 48, symbol: 'Cd', name: 'Cadmium'},
+            {number: 49, symbol: 'In', name: 'Indium'}, {number: 50, symbol: 'Sn', name: 'Tin'},
+            {number: 51, symbol: 'Sb', name: 'Antimony'}, {number: 52, symbol: 'Te', name: 'Tellurium'},
+            {number: 53, symbol: 'I', name: 'Iodine'}, {number: 54, symbol: 'Xe', name: 'Xenon'},
+            {number: 55, symbol: 'Cs', name: 'Cesium'}, {number: 56, symbol: 'Ba', name: 'Barium'},
+            {number: 57, symbol: 'La', name: 'Lanthanum'}, {number: 58, symbol: 'Ce', name: 'Cerium'},
+            {number: 59, symbol: 'Pr', name: 'Praseodymium'}, {number: 60, symbol: 'Nd', name: 'Neodymium'},
+            {number: 61, symbol: 'Pm', name: 'Promethium'}, {number: 62, symbol: 'Sm', name: 'Samarium'},
+            {number: 63, symbol: 'Eu', name: 'Europium'}, {number: 64, symbol: 'Gd', name: 'Gadolinium'},
+            {number: 65, symbol: 'Tb', name: 'Terbium'}, {number: 66, symbol: 'Dy', name: 'Dysprosium'},
+            {number: 67, symbol: 'Ho', name: 'Holmium'}, {number: 68, symbol: 'Er', name: 'Erbium'},
+            {number: 69, symbol: 'Tm', name: 'Thulium'}, {number: 70, symbol: 'Yb', name: 'Ytterbium'},
+            {number: 71, symbol: 'Lu', name: 'Lutetium'}, {number: 72, symbol: 'Hf', name: 'Hafnium'},
+            {number: 73, symbol: 'Ta', name: 'Tantalum'}, {number: 74, symbol: 'W', name: 'Tungsten'},
+            {number: 75, symbol: 'Re', name: 'Rhenium'}, {number: 76, symbol: 'Os', name: 'Osmium'},
+            {number: 77, symbol: 'Ir', name: 'Iridium'}, {number: 78, symbol: 'Pt', name: 'Platinum'},
+            {number: 79, symbol: 'Au', name: 'Gold'}, {number: 80, symbol: 'Hg', name: 'Mercury'},
+            {number: 81, symbol: 'Tl', name: 'Thallium'}, {number: 82, symbol: 'Pb', name: 'Lead'},
+            {number: 83, symbol: 'Bi', name: 'Bismuth'}, {number: 84, symbol: 'Po', name: 'Polonium'},
+            {number: 85, symbol: 'At', name: 'Astatine'}, {number: 86, symbol: 'Rn', name: 'Radon'},
+            {number: 87, symbol: 'Fr', name: 'Francium'}, {number: 88, symbol: 'Ra', name: 'Radium'},
+            {number: 89, symbol: 'Ac', name: 'Actinium'}, {number: 90, symbol: 'Th', name: 'Thorium'},
+            {number: 91, symbol: 'Pa', name: 'Protactinium'}, {number: 92, symbol: 'U', name: 'Uranium'},
+            {number: 93, symbol: 'Np', name: 'Neptunium'}, {number: 94, symbol: 'Pu', name: 'Plutonium'},
+            {number: 95, symbol: 'Am', name: 'Americium'}, {number: 96, symbol: 'Cm', name: 'Curium'},
+            {number: 97, symbol: 'Bk', name: 'Berkelium'}, {number: 98, symbol: 'Cf', name: 'Californium'},
+            {number: 99, symbol: 'Es', name: 'Einsteinium'}, {number: 100, symbol: 'Fm', name: 'Fermium'},
+            {number: 101, symbol: 'Md', name: 'Mendelevium'}, {number: 102, symbol: 'No', name: 'Nobelium'},
+            {number: 103, symbol: 'Lr', name: 'Lawrencium'}, {number: 104, symbol: 'Rf', name: 'Rutherfordium'},
+            {number: 105, symbol: 'Db', name: 'Dubnium'}, {number: 106, symbol: 'Sg', name: 'Seaborgium'},
+            {number: 107, symbol: 'Bh', name: 'Bohrium'}, {number: 108, symbol: 'Hs', name: 'Hassium'},
+            {number: 109, symbol: 'Mt', name: 'Meitnerium'}, {number: 110, symbol: 'Ds', name: 'Darmstadtium'},
+            {number: 111, symbol: 'Rg', name: 'Roentgenium'}, {number: 112, symbol: 'Cn', name: 'Copernicium'},
+            {number: 113, symbol: 'Nh', name: 'Nihonium'}, {number: 114, symbol: 'Fl', name: 'Flerovium'},
+            {number: 115, symbol: 'Mc', name: 'Moscovium'}, {number: 116, symbol: 'Lv', name: 'Livermorium'},
+            {number: 117, symbol: 'Ts', name: 'Tennessine'}, {number: 118, symbol: 'Og', name: 'Oganesson'}
+        ];
+
+        const periodicTable = document.getElementById('periodicTable');
+        const questionElement = document.getElementById('question');
+        const countdownElement = document.getElementById('countdown');
+        const resultElement = document.getElementById('result');
+        const playButton = document.getElementById('playButton');
+
+        let currentQuestion;
+        let countdownTimer;
+        let gamePhase = 'idle';
+        let guessedThisRound = false;
+
+        function createPeriodicTable() {
+            const layout = [
+                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+                [3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6, 7, 8, 9, 10],
+                [11, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 14, 15, 16, 17, 18],
+                [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36],
+                [37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54],
+                [55, 56, 57, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86],
+                [87, 88, 89, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 0, 0],
+                [0, 0, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 0, 0]
+            ];
+
+            layout.forEach((row, rowIndex) => {
+                row.forEach((atomicNumber, colIndex) => {
+                    if (atomicNumber !== 0) {
+                        const element = elements.find(e => e.number === atomicNumber);
+                        const elementDiv = document.createElement('div');
+                        elementDiv.className = 'element';
+                        elementDiv.style.gridRow = rowIndex + 1;
+                        elementDiv.style.gridColumn = colIndex + 1;
+                        elementDiv.innerHTML = `
+                            <div class="element-inner">
+                                <div class="element-front"></div>
+                                <div class="element-back">
+                                    <span class="atomic-number">${element.number}</span>
+                                    <span class="symbol">${element.symbol}</span>
+                                    <span class="name">${element.name}</span>
+                                </div>
+                            </div>
+                        `;
+                        elementDiv.addEventListener('click', () => handleElementClick(element));
+                        periodicTable.appendChild(elementDiv);
+                    }
+                });
+            });
+        }
+
+        function startGame() {
+            gamePhase = 'memorize';
+            guessedThisRound = false;
+            playButton.disabled = true;
+            playButton.textContent = 'Quest in Progress';
+            questionElement.textContent = 'Memorize the elements! Your quest begins soon...';
+            questionElement.classList.remove('pulse');
+            resultElement.textContent = '';
+            resultElement.className = '';
+            revealElements();
+            startCountdown(30, () => {
+                maskElements();
+                askQuestion();
+            });
+        }
+
+        function askQuestion() {
+            gamePhase = 'guess';
+            guessedThisRound = false;
+            currentQuestion = elements[Math.floor(Math.random() * elements.length)];
+            questionElement.textContent = `Find the element: ${currentQuestion.name}`;
+            questionElement.classList.add('pulse');
+            playButton.textContent = 'Quest in Progress';
+            startCountdown(30, () => {
+                showResult('timeout');
+            });
+        }
+
+        function handleElementClick(element) {
+            if (gamePhase !== 'guess' || guessedThisRound) return;
+            guessedThisRound = true;
+            clearInterval(countdownTimer);
+            const clickedElement = event.currentTarget;
+            clickedElement.classList.add('flipped');
+            if (element === currentQuestion) {
+                showResult('correct');
+            } else {
+                showResult('wrong');
+            }
+        }
+
+        function showResult(type) {
+            gamePhase = 'idle';
+            questionElement.classList.remove('pulse');
+            resultElement.textContent = type === 'correct' ? 'Correct! You\'re a true elementalist!' :
+                type === 'wrong' ? 'Oops! Not quite. Keep exploring!' :
+                    'Time\'s up! The element escaped!';
+            resultElement.className = type;
+            playButton.disabled = false;
+            playButton.textContent = 'Start New Quest';
+        }
+
+        function startCountdown(seconds, callback) {
+            let timeLeft = seconds;
+            countdownElement.textContent = timeLeft;
+            countdownTimer = setInterval(() => {
+                timeLeft--;
+                countdownElement.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(countdownTimer);
+                    callback();
+                }
+            }, 1000);
+        }
+
+        function revealElements() {
+            document.querySelectorAll('.element').forEach(el => el.classList.add('flipped'));
+        }
+
+        function maskElements() {
+            document.querySelectorAll('.element').forEach(el => el.classList.remove('flipped'));
+        }
+
+        playButton.addEventListener('click', startGame);
+        createPeriodicTable();
+    </script>
+</body>
+</html>

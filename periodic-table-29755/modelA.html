@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Element Learning Game</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #gameWidget {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        #periodicTable {
+            display: grid;
+            grid-template-columns: repeat(18, 1fr);
+            gap: 5px;
+            margin: 20px 0;
+        }
+
+        .tile {
+            width: 30px;
+            height: 40px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            cursor: pointer;
+            transition: transform 0.5s;
+            transform-style: preserve-3d;
+        }
+
+        .tile .front,
+        .tile .back {
+            backface-visibility: hidden;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .tile .back {
+            transform: rotateY(180deg);
+        }
+
+        .tile.revealed {
+            transform: rotateY(180deg);
+        }
+
+        .tile .number {
+            font-size: 0.6em;
+            text-align: left;
+        }
+
+        .tile .symbol {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .tile .name {
+            font-size: 0.5em;
+        }
+
+        #questionArea div {
+            margin: 10px 0;
+        }
+
+        #countdown,
+        #result {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        #result {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .correct {
+            color: green;
+        }
+
+        .wrong {
+            color: red;
+        }
+
+        .timeup {
+            color: orange;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="gameWidget">
+        <h1>Learn the Elements</h1>
+        <div id="periodicTable"></div>
+        <div id="questionArea">
+            <div id="question">Click play to start!</div>
+            <div id="countdown">30</div>
+            <div id="result"></div>
+            <button id="playButton">Play</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const periodicTable = document.getElementById('periodicTable');
+            const question = document.getElementById('question');
+            const countdown = document.getElementById('countdown');
+            const result = document.getElementById('result');
+            const playButton = document.getElementById('playButton');
+
+            const elements = [
+                { symbol: 'H', name: 'Hydrogen', number: 1 },
+                // ... other elements ...
+            ];
+
+            let timer, currentElement, gameState = 'waiting';
+
+            function createTiles() {
+                elements.forEach(elem => {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.innerHTML = `
+                <div class="front"></div>
+                <div class="back">
+                    <div class="number">${elem.number}</div>
+                    <div class="symbol">${elem.symbol}</div>
+                    <div class="name">${elem.name}</div>
+                </div>
+            `;
+                    tile.onclick = () => selectElement(elem);
+                    periodicTable.appendChild(tile);
+                });
+            }
+
+            function startGame() {
+                gameState = 'playing';
+                playButton.disabled = true;
+                revealTable();
+                setTimeout(maskTable, 30000);
+                startCountdown(30, 'first');
+                setTimeout(() => {
+                    currentElement = elements[Math.floor(Math.random() * elements.length)];
+                    question.textContent = `Find: ${currentElement.name}`;
+                    startCountdown(30, 'second');
+                }, 30000);
+            }
+
+            function revealTable() {
+                document.querySelectorAll('.tile').forEach(tile => tile.classList.add('revealed'));
+            }
+
+            function maskTable() {
+                document.querySelectorAll('.tile').forEach(tile => tile.classList.remove('revealed'));
+            }
+
+            function selectElement(elem) {
+                if (gameState !== 'playing') return;
+                clearInterval(timer);
+                const isCorrect = elem === currentElement;
+                result.textContent = isCorrect ? 'Correct' : 'Wrong';
+                result.className = isCorrect ? 'correct' : 'wrong';
+                gameState = 'ended';
+                playButton.disabled = false;
+            }
+
+            function startCountdown(seconds, phase) {
+                let timeLeft = seconds;
+                countdown.textContent = timeLeft;
+                timer = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        countdown.textContent = timeLeft;
+                    } else {
+                        clearInterval(timer);
+                        if (phase === 'second') {
+                            result.textContent = 'Time up';
+                            result.className = 'timeup';
+                            gameState = 'ended';
+                            playButton.disabled = false;
+                        }
+                    }
+                }, 1000);
+            }
+
+            playButton.onclick = startGame;
+            createTiles();
+        });
+    </script>
+
+</body>
+
+</html>
