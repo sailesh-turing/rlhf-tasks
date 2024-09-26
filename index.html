@@ -1,19 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>Other page</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="stylesheet" href="styles.css" />
-    <script type="module" src="script.js"></script>
-  </head>
-  <body>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/page2.html" aria-current="page">Other page</a>
-    </nav>
-    <main>
-      <h1>My other page</h1>
-    </main>
-  </body>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RLHF Javascript</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <h1>RLHF Javascript Tasks</h1>
+  <div id="fileStructure"></div>
+
+  <script src="file-structure.js"></script>
+  <script>
+    function createFileStructure(structure) {
+      const container = document.getElementById('fileStructure');
+      for (const task of structure) {
+        const folder = task.folder;
+        const files = task.files;
+        const folderElement = document.createElement('div');
+        folderElement.className = 'folder';
+        folderElement.textContent = folder;
+        folderElement.addEventListener('click', function () {
+          this.classList.toggle('open');
+        });
+        container.appendChild(folderElement);
+
+        const filesElement = document.createElement('div');
+        filesElement.className = 'files';
+        files.forEach(file => {
+          const fileLink = document.createElement('a');
+          fileLink.href = `${folder}/${file}`;
+          fileLink.textContent = file;
+          filesElement.appendChild(fileLink);
+          filesElement.appendChild(document.createElement('br'));
+        });
+        container.appendChild(filesElement);
+      }
+    }
+
+    createFileStructure(fileStructure);
+  </script>
+</body>
+
 </html>
