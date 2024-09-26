@@ -5,7 +5,8 @@ let folders = [
     "37297",
     "periodic-table-29755",
     "matrix-multiplication-29699",
-    "add-in-bst-29803"
+    "add-in-bst-29803",
+    "compare-numbers-29857"
 ];
 
 folders = folders.reverse();

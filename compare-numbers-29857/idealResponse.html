@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Comparison</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap');
+
+        body {
+            font-family: 'Bubblegum Sans', cursive;
+            background: linear-gradient(135deg, #6EE7B7 0%, #3B82F6 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 800px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #FF6B6B;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #begin-btn {
+            background-color: #4ECDC4;
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Bubblegum Sans', cursive;
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        #begin-btn:hover {
+            background-color: #45B7AA;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(78, 205, 196, 0.6);
+        }
+
+        #begin-btn:disabled {
+            background-color: #CCCCCC;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #question-section {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+        }
+
+        .number {
+            font-size: 2.5em;
+            background-color: #FFD93D;
+            border-radius: 20px;
+            padding: 20px 30px;
+            cursor: move;
+            min-width: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(255, 217, 61, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .number:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(255, 217, 61, 0.6);
+        }
+
+        #practice-section {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 30px 0;
+            height: 120px;
+        }
+
+        .practice-box {
+            width: 120px;
+            height: 120px;
+            border: 3px dashed #95A5A6;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5em;
+            transition: all 0.3s ease;
+        }
+
+        .practice-box:hover {
+            border-color: #3498DB;
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
+        }
+
+        #sign {
+            font-size: 4em;
+            font-weight: bold;
+            color: #3498DB;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #info-section {
+            margin-top: 30px;
+        }
+
+        #hint,
+        #result {
+            font-size: 1.5em;
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        #hint {
+            color: #E67E22;
+            background-color: rgba(230, 126, 34, 0.1);
+            animation: pulse 1.5s infinite;
+        }
+
+        #result.correct {
+            color: #2ECC71;
+            background-color: rgba(46, 204, 113, 0.1);
+            animation: pulse 1.5s infinite;
+        }
+
+        #result.wrong {
+            color: #E74C3C;
+            background-color: rgba(231, 76, 60, 0.1);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            animation: float 4s infinite;
+            z-index: -1;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Number Comparison</h1>
+        <button id="begin-btn">Begin</button>
+        <div id="question-section"></div>
+        <div id="practice-section">
+            <div id="left-box" class="practice-box" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div id="sign"></div>
+            <div id="right-box" class="practice-box" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        </div>
+        <div id="info-section">
+            <p id="hint"></p>
+            <p id="result"></p>
+        </div>
+    </div>
+
+    <script>
+        const beginBtn = document.getElementById('begin-btn');
+        const questionSection = document.getElementById('question-section');
+        const practiceSection = document.getElementById('practice-section');
+        const sign = document.getElementById('sign');
+        const hint = document.getElementById('hint');
+        const result = document.getElementById('result');
+        const leftBox = document.getElementById('left-box');
+        const rightBox = document.getElementById('right-box');
+
+        let currentNumbers = [];
+        let currentSign = '';
+
+        beginBtn.addEventListener('click', startNewRound);
+
+        function getRandomNumber() {
+            return Math.floor(Math.random() * 100);
+        }
+
+        function getUniqueNumbers() {
+            const n1 = getRandomNumber();
+            let n2 = getRandomNumber();
+            while (n1 === n2) {
+                n2 = getRandomNumber();
+            }
+            return [n1, n2];
+        }
+
+        function startNewRound() {
+            beginBtn.disabled = true;
+            questionSection.innerHTML = '';
+            leftBox.innerHTML = '';
+            rightBox.innerHTML = '';
+            result.textContent = '';
+            result.className = '';
+
+            currentNumbers = getUniqueNumbers();
+
+            currentNumbers.forEach((num, index) => {
+                const numElement = document.createElement('div');
+                numElement.textContent = num;
+                numElement.className = 'number';
+                numElement.draggable = true;
+                numElement.id = `num-${index}`;
+                numElement.addEventListener('dragstart', drag);
+                questionSection.appendChild(numElement);
+            });
+
+            currentSign = Math.random() < 0.5 ? '<' : '>';
+            sign.textContent = currentSign;
+
+            hint.textContent = 'Drag the numbers to the correct sides of the sign.';
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const draggedElement = document.getElementById(data);
+
+            if (ev.target.classList.contains('practice-box') && ev.target.childNodes.length === 0) {
+                ev.target.appendChild(draggedElement);
+                checkResult();
+            }
+        }
+
+        function checkResult() {
+            if (leftBox.childNodes.length === 1 && rightBox.childNodes.length === 1) {
+                const leftNum = parseInt(leftBox.childNodes[0].textContent);
+                const rightNum = parseInt(rightBox.childNodes[0].textContent);
+
+                hint.textContent = `${numberToWords(leftNum)} is ${getComparisonWord(currentSign)} ${numberToWords(rightNum)}.`;
+
+                const isCorrect = (currentSign === '<' && leftNum < rightNum) ||
+                    (currentSign === '>' && leftNum > rightNum);
+
+                result.textContent = isCorrect ? 'Correct!' : 'Wrong!';
+                result.className = isCorrect ? 'correct' : 'wrong';
+
+                beginBtn.disabled = false;
+            }
+        }
+
+        function numberToWords(num) {
+            const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+            const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
+            if (num < 20) return ones[num];
+            return tens[Math.floor(num / 10)] + (num % 10 ? '-' + ones[num % 10] : '');
+        }
+
+        function getComparisonWord(sign) {
+            return sign === '<' ? 'less than' : 'greater than';
+        }
+
+        // Create floating bubbles
+        function createBubbles() {
+            const bubbleCount = 10;
+            for (let i = 0; i < bubbleCount; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.style.width = `${Math.random() * 50 + 20}px`;
+                bubble.style.height = bubble.style.width;
+                bubble.style.left = `${Math.random() * 100}vw`;
+                bubble.style.top = `${Math.random() * 100}vh`;
+                bubble.style.animationDuration = `${Math.random() * 2 + 3}s`;
+                bubble.style.animationDelay = `${Math.random() * 2}s`;
+                document.body.appendChild(bubble);
+            }
+        }
+
+        createBubbles();
+    </script>
+</body>
+
+</html>

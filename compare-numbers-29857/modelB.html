@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Number Comparison Practice</title>
+    <link href="https://fonts.googleapis.com/css?family=Comic+Neue&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Comic Neue', cursive;
+            background: #FFF8DC;
+            color: #333;
+            text-align: center;
+        }
+
+        .container {
+            margin: 20px auto;
+            width: 80%;
+        }
+
+        #title {
+            font-size: 2em;
+            color: #FF6347;
+        }
+
+        #beginButton {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #question,
+        #practice,
+        #info {
+            margin: 20px 0;
+        }
+
+        #question div,
+        #practice div {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px;
+            background: #87CEEB;
+            border-radius: 5px;
+        }
+
+        .number,
+        .sign {
+            cursor: move;
+        }
+
+        .dropzone {
+            min-width: 50px;
+            min-height: 50px;
+            background: #F0E68C;
+        }
+
+        #info div {
+            margin: 10px;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .correct {
+            color: #008000;
+        }
+
+        .wrong {
+            color: #FF0000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div id="title">Number Comparison Practice</div>
+        <button id="beginButton">Begin</button>
+        <div id="question"></div>
+        <div id="practice">
+            <div id="left" class="dropzone"></div>
+            <div id="sign" class="sign"></div>
+            <div id="right" class="dropzone"></div>
+        </div>
+        <div id="info">
+            <div id="hint" class="pulse">Drag the numbers to the correct sides of the sign.</div>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $(function () {
+            let num1, num2, correctSign;
+
+            $("#beginButton").on('click', function () {
+                $(this).prop('disabled', true);
+                num1 = Math.floor(Math.random() * 10) + 1;
+                num2 = Math.floor(Math.random() * 10) + 1;
+                correctSign = Math.random() < 0.5 ? '<' : '>';
+                $("#question").html(`<div class="number" draggable="true">${num1}</div><div class="number" draggable="true">${num2}</div>`);
+                $("#sign").text(correctSign);
+                $("#hint").text("Drag the numbers to the correct sides of the sign.").addClass('pulse');
+                $("#result").text('').removeClass('correct wrong');
+                setupDragDrop();
+            });
+
+            function setupDragDrop() {
+                $(".number").draggable({
+                    revert: "invalid"
+                });
+                $(".dropzone").droppable({
+                    drop: function (event, ui) {
+                        if ($(this).children().length == 0) {
+                            ui.draggable.detach().appendTo($(this));
+                            checkAnswer();
+                        }
+                    }
+                });
+            }
+
+            function checkAnswer() {
+                let leftNum = parseInt($("#left .number").text());
+                let rightNum = parseInt($("#right .number").text());
+                let userAnswer = `${leftNum} ${correctSign} ${rightNum}`;
+                let statement = `${leftNum} is ${correctSign === '<' ? 'less' : 'greater'} than ${rightNum}`;
+                $("#hint").text(statement).removeClass('pulse');
+
+                if ((correctSign === '<' && leftNum < rightNum) || (correctSign === '>' && leftNum > rightNum)) {
+                    $("#result").text('Correct').addClass('correct pulse');
+                } else {
+                    $("#result").text('Wrong').addClass('wrong pulse');
+                }
+
+                $("#beginButton").prop('disabled', false);
+            }
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Number Comparison Practice</title>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: #FFF8DC;
+        }
+
+        .widget {
+            width: 600px;
+            margin: auto;
+            text-align: center;
+            border: 2px solid #FFA07A;
+            padding: 20px;
+            background: #FFE4B5;
+            border-radius: 15px;
+        }
+
+        .title {
+            color: #FF6347;
+        }
+
+        .question,
+        .practice,
+        .info {
+            margin: 20px 0;
+        }
+
+        .practice div {
+            display: inline-block;
+            width: 30%;
+            vertical-align: middle;
+        }
+
+        .number,
+        .sign {
+            background: white;
+            border: 2px dashed #FF6347;
+            padding: 10px;
+            margin: 5px;
+        }
+
+        .sign {
+            font-size: 30px;
+        }
+
+        .info div {
+            margin: 5px;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.5;
+            }
+        }
+
+        .correct {
+            color: green;
+        }
+
+        .wrong {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="widget">
+        <h2 class="title">Compare the Numbers!</h2>
+        <button id="beginBtn" onclick="startPractice()">Begin</button>
+        <div class="question">
+            <div id="num1" class="number" draggable="true"></div>
+            <div id="num2" class="number" draggable="true"></div>
+        </div>
+        <div class="practice">
+            <div id="left" class="dropzone"></div>
+            <div class="sign" id="sign"></div>
+            <div id="right" class="dropzone"></div>
+        </div>
+        <div class="info">
+            <div id="hint" class="pulse"></div>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        function startPractice() {
+            const signs = ['<', '>'];
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            const sign = signs[Math.floor(Math.random() * signs.length)];
+
+            $('#num1').text(num1).attr('data-value', num1);
+            $('#num2').text(num2).attr('data-value', num2);
+            $('#sign').text(sign);
+            $('#hint').text("Drag the numbers to the correct sides of the sign.").addClass('pulse');
+            $('#result').text('').removeClass('pulse correct wrong');
+            $('#beginBtn').prop('disabled', true);
+
+            $('.dropzone').droppable({
+                drop: function (event, ui) {
+                    $(this).text(ui.draggable.text());
+                    checkAnswer(sign, num1, num2);
+                }
+            });
+        }
+
+        function checkAnswer(sign, num1, num2) {
+            let leftVal = parseInt($('#left').text() || 0);
+            let rightVal = parseInt($('#right').text() || 0);
+
+            let comparison = `${leftVal} ${sign} ${rightVal}`;
+            let correct = eval(comparison.replace('<', '<').replace('>', '>'));
+
+            $('#hint').removeClass('pulse').text(comparison);
+            $('#result').text(correct ? 'Correct' : 'Wrong').addClass(`pulse ${correct ? 'correct' : 'wrong'}`);
+            $('#beginBtn').prop('disabled', false);
+        }
+
+        $(function () {
+            $('.number').draggable({
+                revert: 'invalid',
+                helper: 'clone'
+            });
+        });
+    </script>
+
+</body>
+
+</html>
