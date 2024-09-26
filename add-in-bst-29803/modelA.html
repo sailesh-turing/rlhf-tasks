@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Search Tree Insertion Demo</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .tree,
+        .node {
+            display: inline-block;
+            position: relative;
+        }
+
+        .node {
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            border-radius: 50%;
+            background: #4CAF50;
+            color: white;
+            margin: 10px;
+            transition: transform 0.3s;
+        }
+
+        .node.highlight {
+            transform: scale(1.2);
+            background: #ff9800;
+        }
+
+        .node::before,
+        .node::after {
+            content: '';
+            position: absolute;
+            background: #999;
+        }
+
+        .node::before {
+            width: 1px;
+            height: 20px;
+            top: -20px;
+            left: 50%;
+        }
+
+        .node::after {
+            width: 50%;
+            height: 1px;
+            top: -20px;
+            left: 0;
+        }
+
+        .commentary {
+            margin: 20px 0;
+            padding: 10px;
+            background: #e9e9e9;
+            border-radius: 8px;
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+
+        .commentary.fade-out {
+            opacity: 0;
+        }
+
+        button,
+        input {
+            margin: 10px 5px;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Binary Search Tree Insertion</h1>
+        <button id="generateTree">Generate Tree</button>
+        <input type="number" id="nodeValue" placeholder="Enter integer" disabled>
+        <button id="addNode" disabled>Add to Tree</button>
+        <div id="commentary" class="commentary"></div>
+        <div id="tree" class="tree"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const treeDiv = document.getElementById('tree');
+            const commentary = document.getElementById('commentary');
+            const generateTreeBtn = document.getElementById('generateTree');
+            const addNodeBtn = document.getElementById('addNode');
+            const nodeValueInput = document.getElementById('nodeValue');
+            let bst = null;
+
+            function createNode(value) {
+                return { value, left: null, right: null };
+            }
+
+            function insert(root, value) {
+                if (!root) return createNode(value);
+                if (value < root.value) {
+                    root.left = insert(root.left, value);
+                } else {
+                    root.right = insert(root.right, value);
+                }
+                return root;
+            }
+
+            function generateRandomBST() {
+                bst = createNode(Math.floor(Math.random() * 199) - 99); // Start with a random root
+                const nodes = Math.floor(Math.random() * 30) + 1;
+                for (let i = 0; i < nodes; i++) {
+                    insert(bst, Math.floor(Math.random() * 199) - 99);
+                }
+                return bst;
+            }
+
+            function renderTree(node, parentDiv, position) {
+                if (!node) return;
+
+                const nodeDiv = document.createElement('div');
+                nodeDiv.className = 'node';
+                nodeDiv.textContent = node.value;
+                parentDiv.appendChild(nodeDiv);
+
+                if (node.left || node.right) {
+                    const subtree = document.createElement('div');
+                    subtree.className = 'subtree ' + position;
+                    parentDiv.appendChild(subtree);
+
+                    if (node.left) renderTree(node.left, subtree, 'left');
+                    if (node.right) renderTree(node.right, subtree, 'right');
+                }
+            }
+
+            function updateCommentary(message, delay = 1000) {
+                commentary.classList.add('fade-out');
+                setTimeout(() => {
+                    commentary.textContent = message;
+                    commentary.classList.remove('fade-out');
+                }, 500);
+            }
+
+            async function addNodeToBST(value) {
+                if (isNaN(value)) {
+                    updateCommentary("Please enter a valid integer.");
+                    return;
+                }
+
+                let current = bst;
+                let parent = null;
+                let position = null;
+
+                while (current) {
+                    parent = current;
+                    const nodeDiv = document.querySelector(`#tree .node:contains(${current.value})`);
+                    if (nodeDiv) nodeDiv.classList.add('highlight');
+                    if (value < current.value) {
+                        updateCommentary(`${value} is less than ${current.value}. So, ${value} must be added in the left subtree.`);
+                        position = 'left';
+                        current = current.left;
+                    } else {
+                        updateCommentary(`${value} is greater than or equal to ${current.value}. So, ${value} must be added in the right subtree.`);
+                        position = 'right';
+                        current = current.right;
+                    }
+                    await new Promise(r => setTimeout(r, 1500));
+                    if (nodeDiv) nodeDiv.classList.remove('highlight');
+                }
+
+                if (position === 'left') {
+                    parent.left = createNode(value);
+                } else {
+                    parent.right = createNode(value);
+                }
+                updateCommentary("The subtree is empty, which means we found the location to add " + value + ".");
+                await new Promise(r => setTimeout(r, 1500));
+                renderTree(bst, treeDiv, 'root');
+            }
+
+            generateTreeBtn.addEventListener('click', () => {
+                treeDiv.innerHTML = '';
+                bst = generateRandomBST();
+                renderTree(bst, treeDiv, 'root');
+                addNodeBtn.disabled = false;
+                nodeValueInput.disabled = false;
+            });
+
+            addNodeBtn.addEventListener('click', () => {
+                addNodeToBST(parseInt(nodeValueInput.value, 10));
+                nodeValueInput.value = '';
+            });
+        });
+    </script>
+
+</body>
+
+</html>

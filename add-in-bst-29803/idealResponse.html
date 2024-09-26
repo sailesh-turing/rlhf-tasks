@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BST Insertion Adventure</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600&display=swap');
+
+        :root {
+            --primary-color: #5fa8d3;
+            --secondary-color: #8cd2c8;
+            --background-color: #1c2541;
+            --text-color: #e4ebf2;
+            --node-color: #f26a4f;
+            --edge-color: #606780;
+            --container-bg: rgba(28, 37, 65, 0.8);
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.03) 0%, transparent 20%);
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(95, 168, 211, 0.2);
+            width: 800px;
+            max-width: 90vw;
+            border: 2px solid var(--primary-color);
+        }
+
+        h1 {
+            color: var(--secondary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px rgba(95, 168, 211, 0.5);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--background-color);
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(95, 168, 211, 0.3);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(140, 210, 200, 0.4);
+        }
+
+        button:disabled {
+            background-color: var(--edge-color);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        input {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid var(--primary-color);
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 10px rgba(140, 210, 200, 0.3);
+        }
+
+        #commentary {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            min-height: 50px;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--edge-color);
+            box-shadow: 0 0 10px rgba(96, 103, 128, 0.3);
+            font-size: 1.2em;
+        }
+
+        #tree-container {
+            width: calc(100% - 2px);
+            overflow: auto;
+            border: 1px solid var(--edge-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-sizing: border-box;
+            box-shadow: inset 0 0 10px rgba(96, 103, 128, 0.3);
+        }
+
+        #tree {
+            position: relative;
+            margin: 0 auto;
+            min-height: 300px;
+        }
+
+        .node {
+            width: 60px;
+            height: 60px;
+            background-color: var(--node-color);
+            color: var(--text-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            transition: all 0.3s ease;
+            z-index: 2;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(242, 106, 79, 0.3);
+            font-size: 1.2em;
+        }
+
+        .node.highlighted {
+            transform: scale(1.2);
+            box-shadow: 0 0 25px rgba(140, 210, 200, 0.5);
+            background-color: var(--secondary-color);
+        }
+
+        .edge {
+            position: absolute;
+            background-color: var(--edge-color);
+            height: 3px;
+            transform-origin: 0 50%;
+            z-index: 1;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(96, 103, 128, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>BST Insertion Adventure</h1>
+        <div class="controls">
+            <button id="generateBtn">Generate Tree</button>
+            <div>
+                <input type="text" id="insertValue" placeholder="Enter an integer" disabled>
+                <button id="insertBtn" disabled>Insert Node</button>
+            </div>
+        </div>
+        <div id="commentary"></div>
+        <div id="tree-container">
+            <div id="tree"></div>
+        </div>
+    </div>
+
+    <script>
+        class TreeNode {
+            constructor(value) {
+                this.value = value;
+                this.left = null;
+                this.right = null;
+            }
+        }
+
+        class BinarySearchTree {
+            constructor() {
+                this.root = null;
+            }
+
+            insert(value) {
+                this.root = this._insertNode(this.root, value);
+            }
+
+            _insertNode(node, value) {
+                if (node === null) {
+                    return new TreeNode(value);
+                }
+
+                if (value < node.value) {
+                    node.left = this._insertNode(node.left, value);
+                } else {
+                    node.right = this._insertNode(node.right, value);
+                }
+
+                return node;
+            }
+        }
+
+        const tree = new BinarySearchTree();
+        const treeContainer = document.getElementById('tree-container');
+        const treeElement = document.getElementById('tree');
+        const commentaryElement = document.getElementById('commentary');
+        const generateBtn = document.getElementById('generateBtn');
+        const insertValueInput = document.getElementById('insertValue');
+        const insertBtn = document.getElementById('insertBtn');
+
+        generateBtn.addEventListener('click', generateTree);
+        insertBtn.addEventListener('click', startInsertion);
+
+        function generateBalancedBST(sortedArr) {
+            if (sortedArr.length === 0) return null;
+            const mid = Math.floor(sortedArr.length / 2);
+            const node = new TreeNode(sortedArr[mid]);
+            node.left = generateBalancedBST(sortedArr.slice(0, mid));
+            node.right = generateBalancedBST(sortedArr.slice(mid + 1));
+            return node;
+        }
+
+        function generateTree() {
+            const nodeCount = Math.floor(Math.random() * 31) + 1;
+            const values = new Set();
+
+            while (values.size < nodeCount) {
+                values.add(Math.floor(Math.random() * 199) - 99);
+            }
+
+            const sortedValues = Array.from(values).sort((a, b) => a - b);
+            tree.root = generateBalancedBST(sortedValues);
+            renderTree();
+            enableInsertControls();
+            setCommentary('Balanced BST generated. Enter an integer to insert.');
+        }
+
+        function startInsertion() {
+            const value = parseInt(insertValueInput.value);
+            if (isNaN(value)) {
+                setCommentary('Please enter a valid integer.');
+                return;
+            }
+
+            disableInsertControls();
+            insertNode(tree.root, value);
+        }
+
+        async function insertNode(node, value, depth = 0, x = 0, y = 50, prevX = 0, prevY = 0) {
+            const commentaryDuration = 3000;
+            if (node === null) {
+                tree.insert(value);
+                setCommentary(`The subtree is empty, which means we found the location to add ${value}.`);
+                await delay(commentaryDuration);
+                renderTree();
+                enableInsertControls();
+                return;
+            }
+
+            highlightNode(node.value);
+
+            if (value < node.value) {
+                setCommentary(`${value} is less than ${node.value}. So, ${value} must be added in the left subtree.`);
+                await delay(commentaryDuration);
+                await insertNode(node.left, value, depth + 1, x - Math.max(50, 200 / (depth + 2)), y + 80, x, y);
+            } else {
+                setCommentary(`${value} is greater than or equal to ${node.value}. So, ${value} must be added in the right subtree.`);
+                await delay(commentaryDuration);
+                await insertNode(node.right, value, depth + 1, x + Math.max(50, 200 / (depth + 2)), y + 80, x, y);
+            }
+        }
+
+        function renderTree() {
+            treeElement.innerHTML = '';
+            if (tree.root) {
+                const [width, height] = getTreeDimensions(tree.root);
+                treeElement.style.width = `${width}px`;
+                treeElement.style.height = `${height}px`;
+                renderNode(tree.root, 0, width / 2, 50);
+            }
+            treeContainer.style.height = `${Math.min(500, treeElement.offsetHeight + 20)}px`;
+        }
+
+        function getTreeDimensions(node, depth = 0) {
+            if (node === null) return [0, 0];
+
+            const [leftWidth, leftHeight] = getTreeDimensions(node.left, depth + 1);
+            const [rightWidth, rightHeight] = getTreeDimensions(node.right, depth + 1);
+
+            const width = Math.max(leftWidth + rightWidth, 100);
+            const height = Math.max(leftHeight, rightHeight) + 80;
+
+            return [width, height];
+        }
+
+        function renderNode(node, depth = 0, x, y, parentX = null, parentY = null) {
+            if (node === null) return;
+
+            const nodeElement = document.createElement('div');
+            nodeElement.className = 'node';
+            nodeElement.textContent = node.value;
+            nodeElement.style.left = `${x}px`;
+            nodeElement.style.top = `${y}px`;
+            nodeElement.id = `node-${node.value}`;
+            treeElement.appendChild(nodeElement);
+
+            if (parentX !== null && parentY !== null) {
+                const edge = document.createElement('div');
+                edge.className = 'edge';
+                const length = Math.sqrt(Math.pow(x - parentX, 2) + Math.pow(y - parentY, 2));
+                const angle = Math.atan2(y - parentY, x - parentX);
+                edge.style.width = `${length}px`;
+                edge.style.left = `${parentX + 20}px`;
+                edge.style.top = `${parentY + 20}px`;
+                edge.style.transform = `rotate(${angle}rad)`;
+                treeElement.appendChild(edge);
+            }
+
+            const leftX = x - Math.max(50, 200 / (depth + 2));
+            const rightX = x + Math.max(50, 200 / (depth + 2));
+            const childY = y + 80;
+
+            renderNode(node.left, depth + 1, leftX, childY, x, y);
+            renderNode(node.right, depth + 1, rightX, childY, x, y);
+        }
+
+        function highlightNode(value) {
+            const node = document.getElementById(`node-${value}`);
+            if (node) {
+                node.classList.add('highlighted');
+            }
+        }
+
+        function setCommentary(text) {
+            commentaryElement.style.opacity = 0;
+            setTimeout(() => {
+                commentaryElement.textContent = text;
+                commentaryElement.style.opacity = 1;
+            }, 300);
+        }
+
+        function enableInsertControls() {
+            insertValueInput.disabled = false;
+            insertBtn.disabled = false;
+        }
+
+        function disableInsertControls() {
+            insertValueInput.disabled = true;
+            insertBtn.disabled = true;
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+
+</html>
