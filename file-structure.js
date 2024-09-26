@@ -12,6 +12,6 @@ folders = folders.reverse();
 const fileStructure = folders.map(folderName => {
     return {
         folder: folderName,
-        files: ['modelA.html', 'mnodelB.html', 'idealResponse.html']
+        files: ['modelA.html', 'modelB.html', 'idealResponse.html']
     };
 });
