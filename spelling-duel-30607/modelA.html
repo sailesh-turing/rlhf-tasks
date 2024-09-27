@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Duel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        .game-container {
+            width: 80%;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .podium {
+            width: 45%;
+            float: left;
+            margin: 10px;
+            text-align: center;
+        }
+
+        #winner {
+            clear: both;
+            text-align: center;
+            font-size: 1.5em;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .score,
+        .countdown,
+        .result {
+            margin: 10px 0;
+        }
+
+        .word-blanks {
+            font-size: 1.5em;
+            letter-spacing: 5px;
+        }
+
+        .meaning {
+            font-style: italic;
+            animation: fadeIn 1s ease-in;
+        }
+
+        .result {
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container">
+        <h1>Spelling Duel</h1>
+        <button id="beginBtn">Begin</button>
+        <div id="winner"></div>
+        <div class="podium" id="player1">
+            <h2>Player 1</h2>
+            <div class="score">Round: <span id="p1Round">0</span> Score: <span id="p1Score">0/10</span></div>
+            <div class="word-blanks" id="p1Word"></div>
+            <div class="meaning" id="p1Meaning"></div>
+            <div class="countdown" id="p1Countdown"></div>
+            <div class="result" id="p1Result"></div>
+        </div>
+        <div class="podium" id="player2">
+            <h2>Player 2</h2>
+            <div class="score">Round: <span id="p2Round">0</span> Score: <span id="p2Score">0/10</span></div>
+            <div class="word-blanks" id="p2Word"></div>
+            <div class="meaning" id="p2Meaning"></div>
+            <div class="countdown" id="p2Countdown"></div>
+            <div class="result" id="p2Result"></div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const API_URL = 'https://api.datamuse.com/words?sp=*&max=1&md=d'; // This API provides words with definitions. Adjust as needed.
+
+        let currentPlayer = 1;
+        let words = [];
+        let gameActive = false;
+        let timer;
+        let timeLeft = 30;
+
+        document.getElementById('beginBtn').addEventListener('click', startGame);
+
+        function startGame() {
+            document.getElementById('beginBtn').disabled = true;
+            fetchWords().then(() => {
+                gameActive = true;
+                nextRound();
+            });
+        }
+
+        async function fetchWords() {
+            words = [];
+            for (let i = 0; i < 10; i++) {
+                try {
+                    const response = await axios.get(API_URL);
+                    words.push({
+                        word: response.data[0].word,
+                        definition: response.data[0].defs ? response.data[0].defs[0] : 'No definition available'
+                    });
+                } catch (error) {
+                    console.error("Failed to fetch word:", error);
+                }
+            }
+        }
+
+        function nextRound() {
+            if (words.length === 0) {
+                endGame();
+                return;
+            }
+
+            const currentWord = words.shift();
+            const blanks = createBlanks(currentWord.word);
+
+            displayWordAndMeaning(currentWord, blanks);
+            startCountdown();
+        }
+
+        function createBlanks(word) {
+            const visible = Math.floor(word.length / 2);
+            let blanks = word.split('').map((char, index) =>
+                index < visible ? char : '_'
+            ).join('');
+            return blanks;
+        }
+
+        function displayWordAndMeaning(wordObj, blanks) {
+            const player = currentPlayer === 1 ? 'p1' : 'p2';
+            document.getElementById(`${player}Word`).innerHTML = `<input type="text" id="${player}Input" maxlength="${blanks.length}" size="${blanks.length}" oninput="this.value = this.value.toUpperCase()">`;
+            document.getElementById(`${player}Meaning`).textContent = wordObj.definition;
+
+            // Delay and reveal word
+            setTimeout(() => {
+                let index = 0;
+                const revealInterval = setInterval(() => {
+                    if (index < blanks.length) {
+                        document.getElementById(`${player}Word`).innerText = blanks.slice(0, index) + wordObj.word[index] + blanks.slice(index + 1);
+                        index++;
+                    } else {
+                        clearInterval(revealInterval);
+                    }
+                }, 1000 / blanks.length);
+            }, 1000);
+        }
+
+        function startCountdown() {
+            timeLeft = 30;
+            const countdownElement = document.getElementById(`p${currentPlayer}Countdown`);
+            timer = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    countdownElement.textContent = timeLeft;
+                } else {
+                    clearInterval(timer);
+                    checkAnswer();
+                }
+            }, 1000);
+        }
+
+        function checkAnswer() {
+            const player = currentPlayer === 1 ? 'p1' : 'p2';
+            const input = document.getElementById(`${player}Input`).value.toUpperCase();
+            const correctWord = words[words.length - 1].word.toUpperCase();
+            const resultElement = document.getElementById(`${player}Result`);
+
+            if (input === correctWord) {
+                resultElement.textContent = 'Correct';
+                resultElement.style.color = 'green';
+                document.getElementById(`${player}Score`).textContent = `${parseInt(document.getElementById(`${player}Score`).textContent.split('/')[0]) + 1}/10`;
+            } else {
+                resultElement.textContent = 'Wrong';
+                resultElement.style.color = 'red';
+            }
+
+            document.getElementById(`${player}Input`).disabled = true;
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            setTimeout(nextRound, 2000);
+        }
+
+        function endGame() {
+            const p1Score = parseInt(document.getElementById('p1Score').textContent.split('/')[0]);
+            const p2Score = parseInt(document.getElementById('p2Score').textContent.split('/')[0]);
+            let winnerText = p1Score > p2Score ? 'Player 1 Wins!' : (p2Score > p1Score ? 'Player 2 Wins!' : 'It\'s a Tie!');
+            document.getElementById('winner').textContent = winnerText;
+            document.getElementById('winner').style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

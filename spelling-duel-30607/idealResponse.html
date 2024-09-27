@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Duel</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #00ffff;
+            --secondary-color: #ff00ff;
+            --background-color: #0a0a2a;
+            --text-color: #ffffff;
+            --correct-color: #00ff00;
+            --wrong-color: #ff3333;
+            --podium-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Exo 2', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: auto;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-family: 'Rajdhani', sans-serif;
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .begin-button {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2em;
+            padding: 15px 30px;
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            display: block;
+            text-transform: uppercase;
+            font-weight: bold;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .begin-button:hover {
+            background-color: var(--primary-color);
+            color: var(--background-color);
+        }
+
+        .begin-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.2em;
+            color: var(--secondary-color);
+            margin: 20px 0;
+        }
+
+        .winner-section {
+            text-align: center;
+            font-size: 2em;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--primary-color);
+            border-radius: 15px;
+            opacity: 0;
+            transition: all 0.5s ease;
+            box-shadow: 0 0 20px var(--primary-color);
+        }
+
+        .winner-section.visible {
+            opacity: 1;
+            /* transform: scale(1.05); */
+            animation: pulse 2s infinite;
+            /* Added pulse animation */
+        }
+
+        .user-section {
+            display: flex;
+            justify-content: space-between;
+            flex-grow: 1;
+            gap: 40px;
+            /* Increased gap between podiums */
+        }
+
+        .podium {
+            width: 45%;
+            background-color: var(--podium-color);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .user-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.3em;
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+        }
+
+        .score-section {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            border-radius: 10px;
+        }
+
+        .question-section {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .word-display {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.8em;
+            letter-spacing: 4px;
+            margin-bottom: 15px;
+            text-align: center;
+            min-height: 50px;
+        }
+
+        .word-display input {
+            width: 30px;
+            height: 35px;
+            text-align: center;
+            font-size: 0.9em;
+            margin: 0 4px;
+            border: none;
+            border-bottom: 2px solid var(--primary-color);
+            background-color: transparent;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .word-display input:focus {
+            outline: none;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .meaning {
+            font-style: italic;
+            text-align: center;
+            min-height: 50px;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            color: var(--text-color);
+            animation: pulse 2s infinite;
+        }
+
+        .result-section {
+            font-size: 1.1em;
+            font-weight: bold;
+            padding: 8px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            min-height: 35px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .countdown-section {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin: 15px 0;
+            text-align: center;
+            text-shadow: 0 0 10px var(--secondary-color);
+        }
+
+
+
+        .result-section.correct {
+            color: var(--correct-color);
+            background-color: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 15px var(--correct-color);
+        }
+
+        .result-section.wrong {
+            color: var(--wrong-color);
+            background-color: rgba(255, 0, 0, 0.2);
+            box-shadow: 0 0 15px var(--wrong-color);
+        }
+
+        .hologram {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(0deg,
+                    rgba(0, 255, 255, 0.1) 0px,
+                    rgba(0, 255, 255, 0.1) 1px,
+                    transparent 1px,
+                    transparent 2px);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hologram"></div>
+    <div class="game-container">
+        <h1 class="floating">Spelling Duel</h1>
+        <button id="beginButton" class="begin-button">Begin</button>
+        <div id="loadingMessage" class="loading"></div>
+        <div id="winnerSection" class="winner-section"></div>
+        <div class="user-section">
+            <div id="user1Podium" class="podium">
+                <div class="user-title">Player 1</div>
+                <div id="user1Score" class="score-section"></div>
+                <div id="user1Question" class="question-section">
+                    <div id="user1Word" class="word-display"></div>
+                    <div id="user1Meaning" class="meaning"></div>
+                </div>
+                <div id="user1Countdown" class="countdown-section"></div>
+                <div id="user1Result" class="result-section"></div>
+            </div>
+            <div id="user2Podium" class="podium">
+                <div class="user-title">Player 2</div>
+                <div id="user2Score" class="score-section"></div>
+                <div id="user2Question" class="question-section">
+                    <div id="user2Word" class="word-display"></div>
+                    <div id="user2Meaning" class="meaning"></div>
+                </div>
+                <div id="user2Countdown" class="countdown-section"></div>
+                <div id="user2Result" class="result-section"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            currentRound: 0,
+            currentPlayer: 1,
+            scores: [0, 0],
+            gameStarted: false,
+            totalRounds: 10
+        };
+
+        const beginButton = document.getElementById('beginButton');
+        const winnerSection = document.getElementById('winnerSection');
+        const loadingMessage = document.getElementById('loadingMessage');
+
+        beginButton.addEventListener('click', startGame);
+
+        async function getRandomWord() {
+            loadingMessage.textContent = "Fetching a new word...";
+            try {
+                const response = await fetch('https://random-word-api.herokuapp.com/word');
+                const [word] = await response.json();
+                const meaningResponse = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+                const meaningData = await meaningResponse.json();
+
+                if (meaningData.title === "No Definitions Found") {
+                    return getRandomWord(); // Try again if no definition found
+                }
+
+                const meaning = meaningData[0].meanings[0].definitions[0].definition;
+                loadingMessage.textContent = "";
+                return { word: word.toUpperCase(), meaning };
+            } catch (error) {
+                console.error("Error fetching word:", error);
+                loadingMessage.textContent = "Error fetching word. Please try again.";
+                return null;
+            }
+        }
+
+        async function startGame() {
+            gameState = {
+                currentRound: 1,
+                currentPlayer: 1,
+                scores: [0, 0],
+                gameStarted: true,
+                totalRounds: 10
+            };
+            beginButton.disabled = true;
+            winnerSection.textContent = '';
+            winnerSection.classList.remove('visible');
+            updateScoreDisplay();
+
+            // Add a futuristic effect when starting the game
+            document.body.style.animation = 'pulse 0.5s';
+            setTimeout(() => {
+                document.body.style.animation = '';
+            }, 500);
+
+            await startRound();
+        }
+
+        async function startRound() {
+            if (gameState.currentRound > gameState.totalRounds) {
+                endGame();
+                return;
+            }
+
+            updateScoreDisplay();
+
+            const wordData = await getRandomWord();
+            if (!wordData) {
+                beginButton.disabled = false;
+                return;
+            }
+
+            const currentPlayer = gameState.currentPlayer;
+
+            displayMeaning(currentPlayer, wordData.meaning);
+            setTimeout(() => displayWord(currentPlayer, wordData.word), 1000);
+
+            document.getElementById(`user${currentPlayer}Result`).textContent = '';
+            document.getElementById(`user${currentPlayer}Result`).classList.remove('correct', 'wrong');
+
+            startCountdown(currentPlayer);
+        }
+
+        function displayMeaning(player, meaning) {
+            const meaningElement = document.getElementById(`user${player}Meaning`);
+            meaningElement.textContent = meaning;
+        }
+
+        function displayWord(player, word) {
+            const wordElement = document.getElementById(`user${player}Word`);
+            wordElement.innerHTML = '';
+            const blanksCount = Math.floor(word.length / 2);
+            const blanksIndices = new Set();
+            while (blanksIndices.size < blanksCount) {
+                blanksIndices.add(Math.floor(Math.random() * word.length));
+            }
+
+            for (let i = 0; i < word.length; i++) {
+                const span = document.createElement('span');
+                if (blanksIndices.has(i)) {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.maxLength = 1;
+                    input.dataset.correctLetter = word[i];
+                    input.addEventListener('input', function () {
+                        this.value = this.value.toUpperCase();
+                    });
+                    span.appendChild(input);
+                } else {
+                    span.textContent = word[i];
+                }
+                span.style.visibility = 'hidden'; // Hide initially 
+                wordElement.appendChild(span);
+            }
+
+            displayLetters(wordElement, 0);
+        }
+
+        function displayLetters(element, index) {
+            if (index < element.children.length) {
+                element.children[index].style.visibility = 'visible';
+                setTimeout(() => displayLetters(element, index + 1), 200);
+            }
+        }
+
+        function startCountdown(player) {
+            let timeLeft = 30;
+            const countdownElement = document.getElementById(`user${player}Countdown`);
+            countdownElement.textContent = timeLeft;
+
+            const countdownInterval = setInterval(() => {
+                timeLeft--;
+                countdownElement.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    checkAnswer(player);
+                }
+            }, 1000);
+        }
+
+        function checkAnswer(player) {
+            const wordElement = document.getElementById(`user${player}Word`);
+            const inputs = wordElement.querySelectorAll('input');
+            const resultElement = document.getElementById(`user${player}Result`);
+
+            let correct = true;
+            inputs.forEach(input => {
+                if (input.value.toUpperCase() !== input.dataset.correctLetter) {
+                    correct = false;
+                }
+                input.disabled = true;
+            });
+
+            if (correct) {
+                gameState.scores[player - 1]++;
+                resultElement.textContent = 'Correct!';
+                resultElement.classList.add('correct');
+            } else {
+                resultElement.textContent = 'Wrong!';
+                resultElement.classList.add('wrong');
+            }
+
+            updateScoreDisplay();
+            setTimeout(nextTurn, 2000);
+        }
+
+        function updateScoreDisplay() {
+            for (let i = 1; i <= 2; i++) {
+                document.getElementById(`user${i}Score`).textContent = `Round: ${gameState.currentRound}/${gameState.totalRounds} | Score: ${gameState.scores[i - 1]}/${gameState.totalRounds}`;
+            }
+        }
+
+        async function nextTurn() {
+            if (gameState.currentPlayer === 2) {
+                gameState.currentRound++;
+            }
+            gameState.currentPlayer = gameState.currentPlayer === 1 ? 2 : 1;
+            await startRound();
+        }
+
+        function endGame() {
+            const winner = gameState.scores[0] > gameState.scores[1] ? 'Player 1' :
+                gameState.scores[0] < gameState.scores[1] ? 'Player 2' : 'It is a tie!';
+            winnerSection.textContent = winner === 'It is a tie!' ? winner : `${winner} is the winner!`;
+            winnerSection.classList.add('visible');
+            beginButton.disabled = false;
+            beginButton.textContent = 'Begin';
+
+            document.querySelectorAll('.podium').forEach(podium => {
+                podium.style.animation = 'pulse 1s';
+                setTimeout(() => {
+                    podium.style.animation = '';
+                }, 1000);
+            });
+        }
+
+    </script>
+</body>
+
+</html>

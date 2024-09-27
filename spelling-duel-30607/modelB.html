@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Spelling Bee Duel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f4f4f9;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .podium {
+            width: 45%;
+            display: inline-block;
+            margin: 10px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        #winnerSection {
+            margin-top: 20px;
+            font-size: 24px;
+            display: none;
+        }
+
+        .word,
+        .meaning,
+        .result {
+            margin: 10px 0;
+        }
+
+        .word span {
+            border-bottom: 2px solid #000;
+            margin: 0 5px;
+            padding: 5px;
+            display: inline-block;
+            min-width: 10px;
+        }
+
+        .countdown {
+            font-size: 20px;
+            color: #ff5722;
+        }
+
+        .pulse {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+            }
+
+            70% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(0.95);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Spelling Bee Duel</h1>
+    <button id="beginButton">Begin Game</button>
+    <div id="winnerSection"></div>
+
+    <div class="podium" id="player1">
+        <h2>Player 1</h2>
+        <div id="score1">Score: 0/10</div>
+        <div class="word"></div>
+        <div class="meaning"></div>
+        <div class="countdown"></div>
+        <div class="result"></div>
+    </div>
+
+    <div class="podium" id="player2">
+        <h2>Player 2</h2>
+        <div id="score2">Score: 0/10</div>
+        <div class="word"></div>
+        <div class="meaning"></div>
+        <div class="countdown"></div>
+        <div class="result"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let currentPlayer = 1;
+            let scores = { 1: 0, 2: 0 };
+            let round = 1;
+            let wordData = null;
+            let timer;
+
+            $("#beginButton").on('click', startGame);
+
+            function startGame() {
+                $("#beginButton").prop('disabled', true);
+                fetchWordAndPlay();
+            }
+
+            function fetchWordAndPlay() {
+                // Example API, replace with actual API call
+                $.getJSON('https://api.datamuse.com/words?sp=????&md=d&max=1', function (data) {
+                    if (data.length > 0) {
+                        wordData = {
+                            word: data[0].word,
+                            meaning: data[0].defs ? data[0].defs[0] : "No definition found"
+                        };
+                        displayWord();
+                    }
+                });
+            }
+
+            function displayWord() {
+                $('.meaning').html(wordData.meaning).addClass('pulse');
+                setTimeout(() => {
+                    let word = wordData.word;
+                    let displayWord = word.split('').map(char => Math.random() > 0.5 ? '_' : char).join('');
+                    $('.word').html(displayWord.split('').map(char => `<span>${char}</span>`).join(''));
+                    startCountdown();
+                }, 1000);
+            }
+
+            function startCountdown() {
+                let timeLeft = 30;
+                $('.countdown').html(timeLeft).show();
+                timer = setInterval(() => {
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        checkAnswer();
+                    } else {
+                        timeLeft--;
+                        $('.countdown').html(timeLeft);
+                    }
+                }, 1000);
+            }
+
+            function checkAnswer() {
+                let playerWord = $('.word span').map((_, el) => $(el).text() !== '_' ? $(el).text() : '').get().join('');
+                let result = playerWord === wordData.word ? 'Correct' : 'Wrong';
+                $('.result').html(result).addClass(result === 'Correct' ? 'pulse' : '').css('color', result === 'Correct' ? 'green' : 'red');
+                updateScore(result === 'Correct');
+                switchPlayer();
+            }
+
+            function updateScore(isCorrect) {
+                if (isCorrect) scores[currentPlayer]++;
+                $('#score' + currentPlayer).html(`Score: ${scores[currentPlayer]}/10`);
+            }
+
+            function switchPlayer() {
+                currentPlayer = currentPlayer === 1 ? 2 : 1;
+                if (round < 10) {
+                    round++;
+                    setTimeout(fetchWordAndPlay, 1500);
+                } else {
+                    endGame();
+                }
+            }
+
+            function endGame() {
+                let winner = scores[1] > scores[2] ? 'Player 1' : (scores[2] > scores[1] ? 'Player 2' : 'It\'s a tie!');
+                $("#winnerSection").html(winner + " wins!").addClass('pulse').show();
+            }
+        });
+    </script>
+
+</body>
+
+</html>
